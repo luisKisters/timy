@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MicIcon, SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ApiKeyDialog } from "@/components/api-key-dialog";
 
 interface AIInputBarProps {
   onSend?: (message: string) => void;
@@ -27,6 +28,7 @@ export function AIInputBar({
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 p-4">
       <div className="mx-auto flex max-w-md items-center gap-2 rounded-xl border bg-card/80 p-2 shadow-lg backdrop-blur-lg">
+        <ApiKeyDialog />
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}

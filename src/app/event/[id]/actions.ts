@@ -17,7 +17,7 @@ export async function submitAvailability(
 
   // Fetch all slots for this event
   const slots = await pb.collection("time_slots").getFullList({
-    filter: `event_id = "${eventId}"`,
+    filter: `event_id = '${eventId}'`,
   });
 
   // Create votes for each slot

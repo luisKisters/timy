@@ -14,8 +14,7 @@ export default async function EventPage({ params, searchParams }: EventPageProps
 
   const event = await pb.collection("events").getOne<Event>(id);
   const slots = await pb.collection("time_slots").getFullList<TimeSlot>({
-    filter: `event_id = "${id}"`,
-    sort: "start",
+    filter: `event_id = '${id}'`,
   });
 
   return (

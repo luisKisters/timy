@@ -17,19 +17,17 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
   const event = await pb.collection("events").getOne<Event>(id);
   const slots = await pb.collection("time_slots").getFullList<TimeSlot>({
-    filter: `event_id = "${id}"`,
-    sort: "start",
+    filter: `event_id = '${id}'`,
   });
   const participants = await pb.collection("participants").getFullList<Participant>({
-    filter: `event_id = "${id}"`,
-    sort: "created",
+    filter: `event_id = '${id}'`,
   });
 
   // Get all votes for these participants
   const participantIds = participants.map((p) => p.id);
   let votes: Vote[] = [];
   if (participantIds.length > 0) {
-    const filter = participantIds.map((pid) => `participant_id = "${pid}"`).join(" || ");
+    const filter = participantIds.map((pid) => `participant_id = '${pid}'`).join(" || ");
     votes = await pb.collection("votes").getFullList<Vote>({ filter });
   }
 
