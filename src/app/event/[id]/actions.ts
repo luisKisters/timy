@@ -93,3 +93,15 @@ export async function removeSlot(slotId: string, eventId: string) {
   revalidatePath(`/event/${eventId}/results`);
   return { success: true };
 }
+
+export async function saveSharedAIKey(eventId: string, provider: string, apiKey: string) {
+  const { saveEventAIKey } = await import("@/lib/ai-config-server");
+  await saveEventAIKey(eventId, provider, apiKey);
+  revalidatePath(`/event/${eventId}`);
+}
+
+export async function clearSharedAIKey(eventId: string) {
+  const { clearEventAIKey } = await import("@/lib/ai-config-server");
+  await clearEventAIKey(eventId);
+  revalidatePath(`/event/${eventId}`);
+}

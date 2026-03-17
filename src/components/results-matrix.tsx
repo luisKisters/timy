@@ -12,22 +12,12 @@ interface ResultsMatrixProps {
   resolvedSlotId: string | null;
 }
 
-function formatSlot(slot: TimeSlot) {
+function formatSlotHeader(slot: TimeSlot) {
   const start = new Date(slot.start);
   const end = new Date(slot.end);
-  return {
-    date: start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
-    time: `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}–${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`,
-  };
-}
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const date = start.toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" });
+  const time = `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}–${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+  return { date, time };
 }
 
 export function ResultsMatrix({ slots, participants, votes, bestSlotIds, resolvedSlotId }: ResultsMatrixProps) {
@@ -43,66 +33,88 @@ export function ResultsMatrix({ slots, participants, votes, bestSlotIds, resolve
   }
 
   return (
-    <div className="overflow-x-auto -mx-4 px-4">
+    <div className="-mx-4 px-4 overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 bg-background pb-3 pr-3 text-left font-medium text-muted-foreground min-w-[7rem]">
-              Slot
+            <th className="sticky left-0 z-10 bg-background pb-3 pr-3 text-left font-medium text-muted-foreground min-w-[8rem]">
+              Name
             </th>
-            {participants.map((p) => (
-              <th key={p.id} className="pb-3 px-1 text-center font-medium min-w-[2.5rem]" title={p.name}>
-                <div className="mx-auto flex size-7 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                  {initials(p.name)}
-                </div>
-              </th>
-            ))}
-            <th className="pb-3 pl-3 text-center font-medium text-muted-foreground min-w-[3rem]">
-              Total
-            </th>
+            {slots.map((slot) => {
+              const { date, time } = formatSlotHeader(slot);
+              const isBest = bestSlotIds.includes(slot.id);
+              const isResolved = slot.id === resolvedSlotId;
+              return (
+                <th
+                  key={slot.id}
+                  className={cn(
+                    "pb-3 px-2 text-center font-medium min-w-[6rem]",
+                    isResolved && "bg-primary/10",
+                    isBest && !isResolved && "bg-primary/5"
+                  )}
+                >
+                  <div className="flex flex-col items-center gap-0.5">
+                    {isResolved && <CheckIcon className="size-3 text-primary" />}
+                    <span className="text-xs font-semibold">{date}</span>
+                    <span className="text-xs text-muted-foreground font-normal">{time}</span>
+                  </div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
-          {slots.map((slot) => {
-            const { date, time } = formatSlot(slot);
-            const isBest = bestSlotIds.includes(slot.id);
-            const isResolved = slot.id === resolvedSlotId;
-            const count = getCount(slot.id);
-            return (
-              <tr
-                key={slot.id}
-                className={cn(
-                  "border-t transition-colors",
-                  isResolved && "bg-primary/10",
-                  isBest && !isResolved && "bg-primary/5"
-                )}
-              >
-                <td className="sticky left-0 z-10 bg-inherit py-2.5 pr-3">
-                  <div className="flex items-center gap-1.5">
-                    {isResolved && <CheckIcon className="size-3 shrink-0 text-primary" />}
-                    <div>
-                      <p className="font-medium leading-tight">{date}</p>
-                      <p className="text-xs text-muted-foreground">{time}</p>
-                    </div>
-                  </div>
-                </td>
-                {participants.map((p) => {
-                  const available = isAvailable(p.id, slot.id);
-                  return (
-                    <td key={p.id} className="py-2.5 px-1 text-center">
-                      {available
-                        ? <CheckIcon className="mx-auto size-4 text-green-500" />
-                        : <XIcon className="mx-auto size-4 text-red-400/40" />}
-                    </td>
-                  );
-                })}
-                <td className="py-2.5 pl-3 text-center font-semibold tabular-nums">
+          {participants.map((p) => (
+            <tr key={p.id} className="border-t">
+              <td className="sticky left-0 z-10 bg-background py-2.5 pr-3">
+                <span className="max-w-[8rem] truncate block font-medium">{p.name}</span>
+              </td>
+              {slots.map((slot) => {
+                const available = isAvailable(p.id, slot.id);
+                const isResolved = slot.id === resolvedSlotId;
+                const isBest = bestSlotIds.includes(slot.id);
+                return (
+                  <td
+                    key={slot.id}
+                    className={cn(
+                      "py-2.5 px-2 text-center",
+                      isResolved && "bg-primary/10",
+                      isBest && !isResolved && "bg-primary/5"
+                    )}
+                  >
+                    {available
+                      ? <CheckIcon className="mx-auto size-4 text-green-500" />
+                      : <XIcon className="mx-auto size-4 text-red-400/40" />}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-t">
+            <td className="sticky left-0 z-10 bg-background py-2.5 pr-3 font-semibold text-muted-foreground">
+              Total
+            </td>
+            {slots.map((slot) => {
+              const count = getCount(slot.id);
+              const isResolved = slot.id === resolvedSlotId;
+              const isBest = bestSlotIds.includes(slot.id);
+              return (
+                <td
+                  key={slot.id}
+                  className={cn(
+                    "py-2.5 px-2 text-center font-semibold tabular-nums",
+                    isResolved && "bg-primary/10",
+                    isBest && !isResolved && "bg-primary/5"
+                  )}
+                >
                   {count}/{participants.length}
                 </td>
-              </tr>
-            );
-          })}
-        </tbody>
+              );
+            })}
+          </tr>
+        </tfoot>
       </table>
     </div>
   );

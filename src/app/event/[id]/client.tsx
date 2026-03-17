@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { CheckIcon, CopyIcon, LinkIcon, PencilIcon } from "lucide-react";
 import { AvailabilityGrid } from "@/components/availability-grid";
@@ -9,16 +10,20 @@ import { ManageSlotsPanel } from "@/components/manage-slots-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ApiKeyDialog } from "@/components/api-key-dialog";
 import type { Event, TimeSlot } from "@/types";
 import { submitAvailability, updateAvailability } from "./actions";
 import { getIdentity, saveIdentity } from "@/lib/identity";
-import { parseAvailability } from "@/lib/gemini-client";
-import { getGeminiApiKey } from "@/lib/gemini";
+import { parseAvailability, transcribeAndParseAvailability } from "@/lib/ai-client";
+import { getOrMigrateAIConfig } from "@/lib/ai-config";
+import { saveRecentEvent } from "@/lib/recent-events";
+import { ShareButton } from "@/components/share-button";
 
 interface EventPageClientProps {
   event: Event;
   slots: TimeSlot[];
   isCreator: boolean;
+  hasSharedKey?: boolean;
 }
 
 interface SlotDisplay {
@@ -41,7 +46,7 @@ function formatSlots(slots: TimeSlot[]): SlotDisplay[] {
   });
 }
 
-export function EventPageClient({ event, slots, isCreator }: EventPageClientProps) {
+export function EventPageClient({ event, slots, isCreator, hasSharedKey }: EventPageClientProps) {
   const [name, setName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
@@ -57,8 +62,9 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
     ? `${window.location.origin}/event/${event.id}`
     : `/event/${event.id}`;
 
-  // Load identity from localStorage on mount
+  // Load identity and save to recent events on mount
   useEffect(() => {
+    saveRecentEvent({ id: event.id, title: event.title });
     const identity = getIdentity(event.id);
     if (identity) {
       setName(identity.name);
@@ -92,8 +98,8 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   }
 
   async function handleAISend(message: string) {
-    if (!getGeminiApiKey()) {
-      setAiError("Set your Gemini API key first (🔑 button)");
+    if (!getOrMigrateAIConfig() && !hasSharedKey) {
+      setAiError("Set your AI API key first (🔑 button)");
       setTimeout(() => setAiError(null), 4000);
       return;
     }
@@ -101,6 +107,25 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
     setAiError(null);
     try {
       const ids = await parseAvailability(message, displaySlots);
+      setSelected(new Set(ids));
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "AI request failed");
+      setTimeout(() => setAiError(null), 5000);
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  async function handleAIAudio(blob: Blob) {
+    if (!getOrMigrateAIConfig() && !hasSharedKey) {
+      setAiError("Set your AI API key first (🔑 button)");
+      setTimeout(() => setAiError(null), 4000);
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const ids = await transcribeAndParseAvailability(blob, displaySlots);
       setSelected(new Set(ids));
     } catch (e) {
       setAiError(e instanceof Error ? e.message : "AI request failed");
@@ -141,10 +166,18 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
 
   if (submitted && !editMode) {
     return (
-      <main className="flex min-h-[100svh] flex-col p-6 pb-24">
+      <motion.main
+        className="flex min-h-[100svh] flex-col p-6 pb-24"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+      >
         <div className="mx-auto w-full max-w-2xl space-y-8">
           <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+              <ApiKeyDialog eventId={event.id} hasSharedKey={hasSharedKey} />
+            </div>
             {event.description && <p className="text-muted-foreground">{event.description}</p>}
           </div>
 
@@ -180,17 +213,25 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
           </div>
         </div>
 
-        <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" onSend={handleAISend} loading={aiLoading} error={aiError} />
-      </main>
+        <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" onSend={handleAISend} onAudio={handleAIAudio} loading={aiLoading} error={aiError} />
+      </motion.main>
     );
   }
 
   return (
-    <main className="flex min-h-[100svh] flex-col p-6 pb-24">
+    <motion.main
+      className="flex min-h-[100svh] flex-col p-6 pb-24"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
       <div className="mx-auto w-full max-w-2xl space-y-8">
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+            <ApiKeyDialog eventId={event.id} hasSharedKey={hasSharedKey} />
+          </div>
           {event.description && <p className="text-muted-foreground">{event.description}</p>}
         </div>
 
@@ -206,6 +247,7 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
               <Button size="icon" variant="secondary" onClick={handleCopy} title={copied ? "Copied!" : "Copy link"}>
                 {copied ? <CheckIcon /> : <CopyIcon />}
               </Button>
+              <ShareButton url={shareUrl} title={event.title} />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Share with participants to collect votes.</p>
@@ -265,7 +307,7 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
         </div>
       </div>
 
-      <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" />
-    </main>
+      <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" onSend={handleAISend} onAudio={handleAIAudio} loading={aiLoading} error={aiError} />
+    </motion.main>
   );
 }

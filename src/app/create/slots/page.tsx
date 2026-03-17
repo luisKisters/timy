@@ -6,8 +6,8 @@ import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { createEvent } from "@/app/create/actions";
-import { suggestSlots } from "@/lib/gemini-client";
-import { getGeminiApiKey } from "@/lib/gemini";
+import { suggestSlots, transcribeAndSuggestSlots } from "@/lib/ai-client";
+import { getOrMigrateAIConfig } from "@/lib/ai-config";
 
 function localDateKey(date: Date) {
   return [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
@@ -44,9 +44,17 @@ function SlotsContent() {
     });
   }
 
+  async function addSuggestedSlots(suggested: { date: string; startTime: string; endTime: string }[]) {
+    for (const s of suggested) {
+      const date = new Date(`${s.date}T00:00:00`);
+      const id = `${s.date}-${s.startTime}-${s.endTime}-${Date.now()}-${Math.random()}`;
+      handleAddSlot({ id, date, startTime: s.startTime, endTime: s.endTime });
+    }
+  }
+
   async function handleAISend(message: string) {
-    if (!getGeminiApiKey()) {
-      setAiError("Set your Gemini API key first (🔑 button)");
+    if (!getOrMigrateAIConfig()) {
+      setAiError("Set your AI API key first (🔑 button)");
       setTimeout(() => setAiError(null), 4000);
       return;
     }
@@ -54,11 +62,26 @@ function SlotsContent() {
     setAiError(null);
     try {
       const suggested = await suggestSlots(message);
-      for (const s of suggested) {
-        const date = new Date(`${s.date}T00:00:00`);
-        const id = `${s.date}-${s.startTime}-${s.endTime}-${Date.now()}-${Math.random()}`;
-        handleAddSlot({ id, date, startTime: s.startTime, endTime: s.endTime });
-      }
+      await addSuggestedSlots(suggested);
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "AI request failed");
+      setTimeout(() => setAiError(null), 5000);
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  async function handleAIAudio(blob: Blob) {
+    if (!getOrMigrateAIConfig()) {
+      setAiError("Set your AI API key first (🔑 button)");
+      setTimeout(() => setAiError(null), 4000);
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const suggested = await transcribeAndSuggestSlots(blob);
+      await addSuggestedSlots(suggested);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : "AI request failed");
       setTimeout(() => setAiError(null), 5000);
@@ -75,7 +98,9 @@ function SlotsContent() {
           <p className="text-sm text-muted-foreground">Add time slots for participants to vote on</p>
         </div>
 
-        <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
+        <div className="rounded-xl border p-4">
+          <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
+        </div>
 
         {aiError && (
           <p className="text-sm text-destructive">{aiError}</p>
@@ -96,6 +121,7 @@ function SlotsContent() {
       <AIInputBar
         placeholder="e.g. 'Wednesday and Thursday lunches next week'"
         onSend={handleAISend}
+        onAudio={handleAIAudio}
         loading={aiLoading}
       />
     </main>

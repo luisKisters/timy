@@ -4,6 +4,9 @@ import { rankSlots } from "@/lib/resolve";
 import { ResultsMatrix } from "@/components/results-matrix";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "./confirm-button";
+import { AIResultsSuggestion } from "@/components/ai-results-suggestion";
+import { AddToCalendarButton } from "@/components/add-to-calendar-button";
+import { ResultsRefresher } from "./results-refresher";
 import type { Event, TimeSlot, Participant, Vote } from "@/types";
 
 interface ResultsPageProps {
@@ -39,11 +42,14 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     <main className="min-h-[100svh] p-6 pb-8">
       <div className="mx-auto w-full max-w-2xl space-y-8">
         {/* Header */}
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">{event.title} — Results</h1>
-          <p className="text-sm text-muted-foreground">
-            {participants.length} participant{participants.length !== 1 ? "s" : ""} voted
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">{event.title} — Results</h1>
+            <p className="text-sm text-muted-foreground">
+              {participants.length} participant{participants.length !== 1 ? "s" : ""} voted
+            </p>
+          </div>
+          {!event.resolved_slot && <ResultsRefresher />}
         </div>
 
         {/* Matrix */}
@@ -62,17 +68,34 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           const start = new Date(resolved.start);
           const end = new Date(resolved.end);
           return (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-              <p className="text-xs font-medium uppercase tracking-wider text-primary/60 mb-1">Confirmed</p>
-              <p className="font-semibold text-lg">
-                {start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}{" "}
-                {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                &ndash;
-                {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-              </p>
+            <div className="space-y-3">
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-primary/60 mb-1">Confirmed</p>
+                <p className="font-semibold text-lg">
+                  {start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}{" "}
+                  {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                  &ndash;
+                  {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                </p>
+              </div>
+              <AddToCalendarButton
+                title={event.title}
+                description={event.description ?? undefined}
+                start={resolved.start}
+                end={resolved.end}
+              />
             </div>
           );
         })()}
+
+        {/* AI suggestion */}
+        {!event.resolved_slot && topSlots.length > 0 && (
+          <AIResultsSuggestion
+            ranked={ranked}
+            eventTitle={event.title}
+            participantNames={participants.map((p) => p.name)}
+          />
+        )}
 
         {/* Top slots to confirm */}
         {!event.resolved_slot && topSlots.length > 0 && (
