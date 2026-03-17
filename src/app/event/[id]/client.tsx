@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckIcon, CopyIcon, LinkIcon, PencilIcon } from "lucide-react";
 import { AvailabilityGrid } from "@/components/availability-grid";
 import { AIInputBar } from "@/components/ai-input-bar";
+import { ManageSlotsPanel } from "@/components/manage-slots-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -146,6 +147,8 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
             </div>
           </div>
 
+          {isCreator && <ManageSlotsPanel eventId={event.id} slots={slots} />}
+
           <div className="flex gap-3">
             <Button className="flex-1" render={<Link href={`/event/${event.id}/results`} />}>
               View Results
@@ -188,6 +191,10 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
               </Button>
             </div>
           </div>
+        )}
+
+        {isCreator && (
+          <ManageSlotsPanel eventId={event.id} slots={slots} />
         )}
 
         {/* Name input */}

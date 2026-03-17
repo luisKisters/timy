@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getPocketBaseAdmin } from "@/lib/pb-admin";
 
 export async function submitAvailability(
@@ -60,5 +61,35 @@ export async function updateAvailability(
     }
   }
 
+  return { success: true };
+}
+
+export async function addSlotsToEvent(
+  eventId: string,
+  slots: { date: string; startTime: string; endTime: string }[]
+) {
+  const pb = getPocketBaseAdmin();
+  for (const slot of slots) {
+    await pb.collection("time_slots").create({
+      event_id: eventId,
+      start: new Date(`${slot.date}T${slot.startTime}:00`).toISOString(),
+      end: new Date(`${slot.date}T${slot.endTime}:00`).toISOString(),
+    });
+  }
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/results`);
+  return { success: true };
+}
+
+export async function removeSlot(slotId: string, eventId: string) {
+  const pb = getPocketBaseAdmin();
+  // Delete associated votes first
+  const votes = await pb.collection("votes").getFullList({ filter: `slot_id = '${slotId}'` });
+  for (const vote of votes) {
+    await pb.collection("votes").delete(vote.id);
+  }
+  await pb.collection("time_slots").delete(slotId);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/results`);
   return { success: true };
 }
