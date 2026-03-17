@@ -84,11 +84,14 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
           <CardHeader>
             <CardTitle className="text-2xl">Thanks, {name}!</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <p className="text-muted-foreground">
               Your availability has been recorded. The organizer will pick the
               best time.
             </p>
+            <Button variant="secondary" render={<Link href={`/event/${event.id}/results`} />}>
+              View Results
+            </Button>
           </CardContent>
         </Card>
       </main>
@@ -127,10 +130,13 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
                 </Button>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col items-start gap-2">
               <p className="text-xs text-muted-foreground">
                 Share this link with participants so they can vote on time slots.
               </p>
+              <Button variant="secondary" size="sm" render={<Link href={`/event/${event.id}/results`} />}>
+                View Results
+              </Button>
             </CardFooter>
           </Card>
         )}

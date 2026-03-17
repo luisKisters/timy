@@ -2,8 +2,9 @@ import Link from "next/link";
 import { getPocketBaseAdmin } from "@/lib/pb-admin";
 import { rankSlots } from "@/lib/resolve";
 import { ResultsMatrix } from "@/components/results-matrix";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "./confirm-button";
 import type { Event, TimeSlot, Participant, Vote } from "@/types";
 
 interface ResultsPageProps {
@@ -61,6 +62,33 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             />
           </CardContent>
         </Card>
+
+        {!event.resolved_slot && bestSlotIds.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Best Slot{bestSlotIds.length > 1 ? "s" : ""}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {bestSlotIds.map((slotId) => {
+                const slot = slots.find((s) => s.id === slotId);
+                if (!slot) return null;
+                const start = new Date(slot.start);
+                const end = new Date(slot.end);
+                return (
+                  <div key={slotId} className="flex items-center justify-between rounded-lg border p-3">
+                    <p className="text-sm font-medium">
+                      {start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}{" "}
+                      {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                      &ndash;
+                      {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                    </p>
+                    <ConfirmButton eventId={id} slotId={slotId} />
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         {event.resolved_slot && (
           <Card className="border-primary/30 bg-primary/5">
