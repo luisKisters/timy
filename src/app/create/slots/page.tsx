@@ -3,10 +3,9 @@
 import { Suspense, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
-import { SlotList } from "@/components/slot-list";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { createEvent } from "@/app/create/actions";
 
 function SlotsContent() {
@@ -55,18 +54,7 @@ function SlotsContent() {
           </CardHeader>
         </Card>
 
-        <SlotPicker slots={slots} onAddSlot={handleAddSlot} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Slots ({slots.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SlotList slots={slots} onRemove={handleRemove} />
-          </CardContent>
-        </Card>
+        <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
 
         <Button
           className="w-full"
@@ -75,7 +63,7 @@ function SlotsContent() {
           onClick={handleCreate}
           data-loading={isPending || undefined}
         >
-          {isPending ? "Creating..." : "Create Event"}
+          {isPending ? "Creating..." : `Create Event · ${slots.length} slot${slots.length !== 1 ? "s" : ""}`}
         </Button>
       </div>
 
