@@ -44,7 +44,7 @@ export function ManageSlotsPanel({ eventId, slots }: ManageSlotsPanelProps) {
       await addSlotsToEvent(
         eventId,
         newSlots.map((s) => ({
-          date: s.date.toISOString().split("T")[0],
+          date: [s.date.getFullYear(), String(s.date.getMonth()+1).padStart(2,"0"), String(s.date.getDate()).padStart(2,"0")].join("-"),
           startTime: s.startTime,
           endTime: s.endTime,
         }))

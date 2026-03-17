@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import type { Event, TimeSlot } from "@/types";
 import { submitAvailability, updateAvailability } from "./actions";
 import { getIdentity, saveIdentity } from "@/lib/identity";
+import { parseAvailability } from "@/lib/gemini-client";
+import { getGeminiApiKey } from "@/lib/gemini";
 
 interface EventPageClientProps {
   event: Event;
@@ -46,6 +48,8 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   const [editMode, setEditMode] = useState(false);
   const [existingParticipantId, setExistingParticipantId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const displaySlots = formatSlots(slots);
 
@@ -85,6 +89,25 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  async function handleAISend(message: string) {
+    if (!getGeminiApiKey()) {
+      setAiError("Set your Gemini API key first (🔑 button)");
+      setTimeout(() => setAiError(null), 4000);
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const ids = await parseAvailability(message, displaySlots);
+      setSelected(new Set(ids));
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "AI request failed");
+      setTimeout(() => setAiError(null), 5000);
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   function handleToggle(slotId: string) {
@@ -157,7 +180,7 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
           </div>
         </div>
 
-        <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" />
+        <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" onSend={handleAISend} loading={aiLoading} error={aiError} />
       </main>
     );
   }

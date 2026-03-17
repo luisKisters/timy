@@ -6,6 +6,12 @@ import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { createEvent } from "@/app/create/actions";
+import { suggestSlots } from "@/lib/gemini-client";
+import { getGeminiApiKey } from "@/lib/gemini";
+
+function localDateKey(date: Date) {
+  return [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
+}
 
 function SlotsContent() {
   const searchParams = useSearchParams();
@@ -14,12 +20,11 @@ function SlotsContent() {
   const expiry = searchParams.get("expiry") || "3d";
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [isPending, startTransition] = useTransition();
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   function handleAddSlot(slot: TimeSlot) {
-    setSlots((prev) => {
-      if (prev.some((s) => s.id === slot.id)) return prev;
-      return [...prev, slot];
-    });
+    setSlots((prev) => prev.some((s) => s.id === slot.id) ? prev : [...prev, slot]);
   }
 
   function handleRemove(id: string) {
@@ -29,16 +34,37 @@ function SlotsContent() {
   function handleCreate() {
     startTransition(async () => {
       await createEvent({
-        title,
-        description,
-        expiry,
+        title, description, expiry,
         slots: slots.map((s) => ({
-          date: s.date.toISOString().split("T")[0],
+          date: localDateKey(s.date),
           startTime: s.startTime,
           endTime: s.endTime,
         })),
       });
     });
+  }
+
+  async function handleAISend(message: string) {
+    if (!getGeminiApiKey()) {
+      setAiError("Set your Gemini API key first (🔑 button)");
+      setTimeout(() => setAiError(null), 4000);
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const suggested = await suggestSlots(message);
+      for (const s of suggested) {
+        const date = new Date(`${s.date}T00:00:00`);
+        const id = `${s.date}-${s.startTime}-${s.endTime}-${Date.now()}-${Math.random()}`;
+        handleAddSlot({ id, date, startTime: s.startTime, endTime: s.endTime });
+      }
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : "AI request failed");
+      setTimeout(() => setAiError(null), 5000);
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   return (
@@ -50,6 +76,10 @@ function SlotsContent() {
         </div>
 
         <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
+
+        {aiError && (
+          <p className="text-sm text-destructive">{aiError}</p>
+        )}
 
         <Button
           className="w-full"
@@ -63,7 +93,11 @@ function SlotsContent() {
         </Button>
       </div>
 
-      <AIInputBar placeholder="Describe times, e.g. 'weekday lunches next week'" />
+      <AIInputBar
+        placeholder="e.g. 'Wednesday and Thursday lunches next week'"
+        onSend={handleAISend}
+        loading={aiLoading}
+      />
     </main>
   );
 }

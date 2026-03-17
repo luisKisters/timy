@@ -20,8 +20,13 @@ interface SlotPickerProps {
   onRemove: (id: string) => void;
 }
 
+// Use local date parts to avoid UTC-shift bugs in non-UTC timezones
 function dayKey(date: Date) {
-  return date.toISOString().split("T")[0];
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
 }
 
 function formatDayLabel(date: Date) {
