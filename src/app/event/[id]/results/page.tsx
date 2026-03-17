@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getPocketBaseAdmin } from "@/lib/pb-admin";
 import { rankSlots } from "@/lib/resolve";
 import { ResultsMatrix } from "@/components/results-matrix";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConfirmButton } from "./confirm-button";
 import type { Event, TimeSlot, Participant, Vote } from "@/types";
@@ -16,18 +15,12 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const pb = getPocketBaseAdmin();
 
   const event = await pb.collection("events").getOne<Event>(id);
-  const slots = await pb.collection("time_slots").getFullList<TimeSlot>({
-    filter: `event_id = '${id}'`,
-  });
-  const participants = await pb.collection("participants").getFullList<Participant>({
-    filter: `event_id = '${id}'`,
-  });
+  const slots = await pb.collection("time_slots").getFullList<TimeSlot>({ filter: `event_id = '${id}'` });
+  const participants = await pb.collection("participants").getFullList<Participant>({ filter: `event_id = '${id}'` });
 
-  // Get all votes for these participants
-  const participantIds = participants.map((p) => p.id);
   let votes: Vote[] = [];
-  if (participantIds.length > 0) {
-    const filter = participantIds.map((pid) => `participant_id = '${pid}'`).join(" || ");
+  if (participants.length > 0) {
+    const filter = participants.map((p) => `participant_id = '${p.id}'`).join(" || ");
     votes = await pb.collection("votes").getFullList<Vote>({ filter });
   }
 
@@ -37,86 +30,93 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     .filter((r) => r.availableCount === bestScore && bestScore > 0)
     .map((r) => r.slot.id);
 
-  // Sort slots by rank for display
+  // Top 3 slots to show in the suggestion section
+  const topSlots = ranked.slice(0, 3).filter((r) => r.availableCount > 0);
+
   const rankedSlots = ranked.map((r) => r.slot);
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-2xl space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{event.title} &mdash; Results</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {participants.length} participant{participants.length !== 1 ? "s" : ""} voted
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ResultsMatrix
-              slots={rankedSlots}
-              participants={JSON.parse(JSON.stringify(participants))}
-              votes={JSON.parse(JSON.stringify(votes))}
-              bestSlotIds={bestSlotIds}
-              resolvedSlotId={event.resolved_slot}
-            />
-          </CardContent>
-        </Card>
+    <main className="min-h-[100svh] p-6 pb-8">
+      <div className="mx-auto w-full max-w-2xl space-y-8">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">{event.title} — Results</h1>
+          <p className="text-sm text-muted-foreground">
+            {participants.length} participant{participants.length !== 1 ? "s" : ""} voted
+          </p>
+        </div>
 
-        {!event.resolved_slot && bestSlotIds.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Best Slot{bestSlotIds.length > 1 ? "s" : ""}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {bestSlotIds.map((slotId) => {
-                const slot = slots.find((s) => s.id === slotId);
-                if (!slot) return null;
-                const start = new Date(slot.start);
-                const end = new Date(slot.end);
+        {/* Matrix */}
+        <ResultsMatrix
+          slots={rankedSlots}
+          participants={JSON.parse(JSON.stringify(participants))}
+          votes={JSON.parse(JSON.stringify(votes))}
+          bestSlotIds={bestSlotIds}
+          resolvedSlotId={event.resolved_slot}
+        />
+
+        {/* Confirmed time */}
+        {event.resolved_slot && (() => {
+          const resolved = slots.find((s) => s.id === event.resolved_slot);
+          if (!resolved) return null;
+          const start = new Date(resolved.start);
+          const end = new Date(resolved.end);
+          return (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-primary/60 mb-1">Confirmed</p>
+              <p className="font-semibold text-lg">
+                {start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}{" "}
+                {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                &ndash;
+                {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+              </p>
+            </div>
+          );
+        })()}
+
+        {/* Top slots to confirm */}
+        {!event.resolved_slot && topSlots.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">
+              {topSlots.length === 1 ? "Best slot" : "Top slots"} — tap to confirm
+            </p>
+            <div className="space-y-2">
+              {topSlots.map((r, i) => {
+                const start = new Date(r.slot.start);
+                const end = new Date(r.slot.end);
+                const isBest = i === 0;
                 return (
-                  <div key={slotId} className="flex items-center justify-between rounded-lg border p-3">
-                    <p className="text-sm font-medium">
-                      {start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}{" "}
-                      {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                      &ndash;
-                      {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                    </p>
-                    <ConfirmButton eventId={id} slotId={slotId} />
+                  <div
+                    key={r.slot.id}
+                    className="flex items-center justify-between rounded-xl border p-4 transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        {isBest && (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Best</span>
+                        )}
+                        <p className="font-medium">
+                          {start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}{" "}
+                          {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                          –{end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                        </p>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {r.availableCount}/{r.totalCount} available ({r.percentage}%)
+                      </p>
+                    </div>
+                    <ConfirmButton eventId={id} slotId={r.slot.id} />
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {event.resolved_slot && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="text-lg">Confirmed Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {(() => {
-                const resolved = slots.find((s) => s.id === event.resolved_slot);
-                if (!resolved) return <p>Slot not found</p>;
-                const start = new Date(resolved.start);
-                const end = new Date(resolved.end);
-                return (
-                  <p className="font-medium">
-                    {start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}{" "}
-                    {start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                    &ndash;
-                    {end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                  </p>
-                );
-              })()}
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="flex gap-2">
-          <Button variant="secondary" className="flex-1" render={<Link href={`/event/${id}`} />}>
-            Back to Event
-          </Button>
-        </div>
+        <Button variant="secondary" className="w-full" render={<Link href={`/event/${id}`} />}>
+          ← Back to Event
+          <span className="ml-2 text-xs opacity-40">⎋</span>
+        </Button>
       </div>
     </main>
   );

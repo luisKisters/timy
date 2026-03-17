@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
-import { CheckIcon, CopyIcon, LinkIcon } from "lucide-react";
-import { EventHeader } from "@/components/event-header";
+import { CheckIcon, CopyIcon, LinkIcon, PencilIcon } from "lucide-react";
 import { AvailabilityGrid } from "@/components/availability-grid";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Event, TimeSlot } from "@/types";
-import { submitAvailability } from "./actions";
+import { submitAvailability, updateAvailability } from "./actions";
+import { getIdentity, saveIdentity } from "@/lib/identity";
 
 interface EventPageClientProps {
   event: Event;
@@ -43,6 +42,8 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   const [name, setName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [existingParticipantId, setExistingParticipantId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
   const displaySlots = formatSlots(slots);
@@ -50,6 +51,33 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/event/${event.id}`
     : `/event/${event.id}`;
+
+  // Load identity from localStorage on mount
+  useEffect(() => {
+    const identity = getIdentity(event.id);
+    if (identity) {
+      setName(identity.name);
+      setSelected(new Set(identity.selectedSlotIds));
+      setExistingParticipantId(identity.id);
+      setSubmitted(true);
+    }
+  }, [event.id]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setSelected(new Set());
+      }
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (!submitted && name.trim() && selected.size > 0 && !isPending) {
+          handleSubmit();
+        }
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   function handleCopy() {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -61,125 +89,150 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   function handleToggle(slotId: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(slotId)) {
-        next.delete(slotId);
-      } else {
-        next.add(slotId);
-      }
+      if (next.has(slotId)) next.delete(slotId);
+      else next.add(slotId);
       return next;
     });
   }
 
   function handleSubmit() {
     startTransition(async () => {
-      await submitAvailability(event.id, name, Array.from(selected));
+      if (existingParticipantId && !editMode) return;
+      let participantId = existingParticipantId;
+      if (existingParticipantId) {
+        await updateAvailability(existingParticipantId, name, Array.from(selected), event.id);
+      } else {
+        const result = await submitAvailability(event.id, name, Array.from(selected));
+        participantId = result.participantId;
+      }
+      saveIdentity(event.id, { id: participantId!, name, selectedSlotIds: Array.from(selected) });
+      setExistingParticipantId(participantId);
       setSubmitted(true);
+      setEditMode(false);
     });
   }
 
-  if (submitted) {
+  const isEditing = editMode || (!submitted && !existingParticipantId);
+  const canSubmit = name.trim() && selected.size > 0 && !isPending;
+
+  if (submitted && !editMode) {
     return (
-      <main className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl">Thanks, {name}!</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-muted-foreground">
-              Your availability has been recorded. The organizer will pick the
-              best time.
-            </p>
-            <Button variant="secondary" render={<Link href={`/event/${event.id}/results`} />}>
+      <main className="flex min-h-[100svh] flex-col p-6 pb-24">
+        <div className="mx-auto w-full max-w-2xl space-y-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+            {event.description && <p className="text-muted-foreground">{event.description}</p>}
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Thanks, {name}!</p>
+                <p className="text-sm text-muted-foreground">Your availability has been recorded.</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => { setEditMode(true); setSubmitted(false); }}
+              >
+                <PencilIcon className="size-3.5 mr-1.5" />
+                Edit
+                <span className="ml-1.5 text-xs opacity-40">e</span>
+              </Button>
+            </div>
+
+            <div className="opacity-60 pointer-events-none">
+              <AvailabilityGrid slots={displaySlots} selected={selected} onToggle={() => {}} />
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button className="flex-1" render={<Link href={`/event/${event.id}/results`} />}>
               View Results
+              <span className="ml-2 text-xs opacity-40">↵</span>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" />
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 pb-24">
-      <div className="w-full max-w-md space-y-4">
-        <EventHeader
-          title={event.title}
-          description={event.description}
-        />
+    <main className="flex min-h-[100svh] flex-col p-6 pb-24">
+      <div className="mx-auto w-full max-w-2xl space-y-8">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+          {event.description && <p className="text-muted-foreground">{event.description}</p>}
+        </div>
 
+        {/* Share section (creator only) */}
         {isCreator && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <LinkIcon className="size-4" />
-                Share This Event
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Input
-                  readOnly
-                  value={shareUrl}
-                  className="text-sm"
-                />
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  onClick={handleCopy}
-                >
-                  {copied ? <CheckIcon /> : <CopyIcon />}
-                </Button>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col items-start gap-2">
-              <p className="text-xs text-muted-foreground">
-                Share this link with participants so they can vote on time slots.
-              </p>
-              <Button variant="secondary" size="sm" render={<Link href={`/event/${event.id}/results`} />}>
-                View Results
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <LinkIcon className="size-4" />
+              Share this event
+            </div>
+            <div className="flex gap-2">
+              <Input readOnly value={shareUrl} className="text-sm" />
+              <Button size="icon" variant="secondary" onClick={handleCopy} title={copied ? "Copied!" : "Copy link"}>
+                {copied ? <CheckIcon /> : <CopyIcon />}
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Share with participants to collect votes.</p>
+              <Button variant="ghost" size="sm" render={<Link href={`/event/${event.id}/results`} />}>
+                Results →
+              </Button>
+            </div>
+          </div>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Your Name</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="participant-name">Name</Label>
-              <Input
-                id="participant-name"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Name input */}
+        <div className="space-y-1.5">
+          <Label htmlFor="participant-name">Your name</Label>
+          <Input
+            id="participant-name"
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoFocus={!existingParticipantId}
+          />
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Select Your Availability</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AvailabilityGrid
-              slots={displaySlots}
-              selected={selected}
-              onToggle={handleToggle}
-            />
-          </CardContent>
-        </Card>
+        {/* Availability */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Your availability</Label>
+            <span className="text-xs text-muted-foreground/50">
+              {selected.size > 0 ? `${selected.size} selected` : "tap to select"}
+              {" · "}⎋ to clear
+            </span>
+          </div>
+          <AvailabilityGrid slots={displaySlots} selected={selected} onToggle={handleToggle} />
+        </div>
 
-        <Button
-          className="w-full"
-          size="lg"
-          disabled={!name.trim() || selected.size === 0 || isPending}
-          onClick={handleSubmit}
-          data-loading={isPending || undefined}
-        >
-          {isPending ? "Submitting..." : "Submit Availability"}
-        </Button>
+        {/* Submit */}
+        <div className="space-y-2">
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={!canSubmit}
+            onClick={handleSubmit}
+            data-loading={isPending || undefined}
+          >
+            {isPending ? "Submitting..." : existingParticipantId ? "Update Availability" : "Submit Availability"}
+            {!isPending && <span className="ml-2 text-xs opacity-40">⌘↵</span>}
+          </Button>
+          {existingParticipantId && (
+            <Button variant="ghost" className="w-full" size="sm" onClick={() => { setEditMode(false); setSubmitted(true); }}>
+              Cancel
+              <span className="ml-1.5 text-xs opacity-40">⎋</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" />

@@ -31,3 +31,34 @@ export async function submitAvailability(
 
   return { success: true, participantId: participant.id };
 }
+
+export async function updateAvailability(
+  participantId: string,
+  name: string,
+  selectedSlotIds: string[],
+  eventId: string
+) {
+  const pb = getPocketBaseAdmin();
+
+  await pb.collection("participants").update(participantId, { name });
+
+  const slots = await pb.collection("time_slots").getFullList({
+    filter: `event_id = '${eventId}'`,
+  });
+
+  const existingVotes = await pb.collection("votes").getFullList({
+    filter: `participant_id = '${participantId}'`,
+  });
+
+  for (const slot of slots) {
+    const existing = existingVotes.find((v) => v.slot_id === slot.id);
+    const available = selectedSlotIds.includes(slot.id);
+    if (existing) {
+      await pb.collection("votes").update(existing.id, { available });
+    } else {
+      await pb.collection("votes").create({ participant_id: participantId, slot_id: slot.id, available });
+    }
+  }
+
+  return { success: true };
+}

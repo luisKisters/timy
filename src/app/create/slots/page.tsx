@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { createEvent } from "@/app/create/actions";
 
 function SlotsContent() {
@@ -43,16 +42,12 @@ function SlotsContent() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 pb-24">
-      <div className="w-full max-w-md space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">{title}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Add time slots for participants to vote on
-            </p>
-          </CardHeader>
-        </Card>
+    <main className="min-h-[100svh] p-6 pb-24">
+      <div className="mx-auto w-full max-w-2xl space-y-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <p className="text-sm text-muted-foreground">Add time slots for participants to vote on</p>
+        </div>
 
         <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
 
@@ -64,6 +59,7 @@ function SlotsContent() {
           data-loading={isPending || undefined}
         >
           {isPending ? "Creating..." : `Create Event · ${slots.length} slot${slots.length !== 1 ? "s" : ""}`}
+          {!isPending && slots.length > 0 && <span className="ml-2 text-xs opacity-40">⌘↵</span>}
         </Button>
       </div>
 
