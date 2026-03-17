@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
+import { CheckIcon, CopyIcon, LinkIcon } from "lucide-react";
 import { EventHeader } from "@/components/event-header";
 import { AvailabilityGrid } from "@/components/availability-grid";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Event, TimeSlot } from "@/types";
 import { submitAvailability } from "./actions";
 
@@ -41,8 +43,20 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
   const [name, setName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
   const displaySlots = formatSlots(slots);
+
+  const shareUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/event/${event.id}`
+    : `/event/${event.id}`;
+
+  function handleCopy() {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   function handleToggle(slotId: string) {
     setSelected((prev) => {
@@ -88,6 +102,38 @@ export function EventPageClient({ event, slots, isCreator }: EventPageClientProp
           title={event.title}
           description={event.description}
         />
+
+        {isCreator && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <LinkIcon className="size-4" />
+                Share This Event
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={shareUrl}
+                  className="text-sm"
+                />
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={handleCopy}
+                >
+                  {copied ? <CheckIcon /> : <CopyIcon />}
+                </Button>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <p className="text-xs text-muted-foreground">
+                Share this link with participants so they can vote on time slots.
+              </p>
+            </CardFooter>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
