@@ -2,12 +2,22 @@
 
 import { Suspense, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { createEvent } from "@/app/create/actions";
 import { suggestSlots, transcribeAndSuggestSlots } from "@/lib/ai-client";
 import { getOrMigrateAIConfig } from "@/lib/ai-config";
+import { cn } from "@/lib/utils";
+
+const EXPIRY_OPTIONS = [
+  { label: "1 day", value: "1d" },
+  { label: "3 days", value: "3d" },
+  { label: "1 week", value: "1w" },
+  { label: "After last slot + 1 week", value: "auto" },
+  { label: "Never", value: "never" },
+];
 
 function localDateKey(date: Date) {
   return [date.getFullYear(), String(date.getMonth()+1).padStart(2,"0"), String(date.getDate()).padStart(2,"0")].join("-");
@@ -17,11 +27,14 @@ function SlotsContent() {
   const searchParams = useSearchParams();
   const title = searchParams.get("title") || "Untitled Event";
   const description = searchParams.get("description") || "";
-  const expiry = searchParams.get("expiry") || "3d";
+  const initialExpiry = searchParams.get("expiry") || "3d";
+  const [expiry, setExpiry] = useState(initialExpiry);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [isPending, startTransition] = useTransition();
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+
+  const backParams = new URLSearchParams({ title, description, expiry });
 
   function handleAddSlot(slot: TimeSlot) {
     setSlots((prev) => prev.some((s) => s.id === slot.id) ? prev : [...prev, slot]);
@@ -91,14 +104,48 @@ function SlotsContent() {
   }
 
   return (
-    <main className="min-h-[100svh] p-6 pb-24">
-      <div className="mx-auto w-full max-w-2xl space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-          <p className="text-sm text-muted-foreground">Add time slots for participants to vote on</p>
+    <main className="min-h-[100svh] flex flex-col p-4 sm:p-6 pb-28">
+      <div className="mx-auto w-full max-w-2xl flex flex-col gap-6 flex-1">
+        {/* Back link */}
+        <div>
+          <Link
+            href={`/create?${backParams}`}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Back &amp; edit event details
+          </Link>
         </div>
 
-        <div className="rounded-xl border p-4">
+        {/* Header */}
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
+          <p className="text-sm text-muted-foreground">Pick the time slots participants can vote on.</p>
+        </div>
+
+        {/* Expiry selection */}
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <p className="text-sm font-medium">Poll closes</p>
+          <div className="flex gap-2 flex-wrap">
+            {EXPIRY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setExpiry(opt.value)}
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                  expiry === opt.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Slot picker — fixed height scrollable */}
+        <div className="max-h-[50vh] overflow-y-auto overscroll-contain rounded-xl border p-4">
           <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
         </div>
 

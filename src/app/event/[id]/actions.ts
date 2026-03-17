@@ -105,3 +105,10 @@ export async function clearSharedAIKey(eventId: string) {
   await clearEventAIKey(eventId);
   revalidatePath(`/event/${eventId}`);
 }
+
+export async function updateEvent(eventId: string, data: { title: string; description: string }) {
+  const pb = getPocketBaseAdmin();
+  await pb.collection("events").update(eventId, data);
+  revalidatePath(`/event/${eventId}`);
+  revalidatePath(`/event/${eventId}/results`);
+}

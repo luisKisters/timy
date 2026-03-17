@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { CheckIcon, CopyIcon, LinkIcon, PencilIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, PencilIcon } from "lucide-react";
 import { AvailabilityGrid } from "@/components/availability-grid";
 import { AIInputBar } from "@/components/ai-input-bar";
 import { ManageSlotsPanel } from "@/components/manage-slots-panel";
+import { EditEventPanel } from "@/components/edit-event-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +49,7 @@ function formatSlots(slots: TimeSlot[]): SlotDisplay[] {
 }
 
 export function EventPageClient({ event, slots, isCreator, hasSharedKey }: EventPageClientProps) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
@@ -161,27 +164,28 @@ export function EventPageClient({ event, slots, isCreator, hasSharedKey }: Event
     });
   }
 
-  const isEditing = editMode || (!submitted && !existingParticipantId);
   const canSubmit = name.trim() && selected.size > 0 && !isPending;
 
   if (submitted && !editMode) {
     return (
       <motion.main
-        className="flex min-h-[100svh] flex-col p-6 pb-24"
+        className="min-h-[100svh] flex flex-col p-4 sm:p-6 pb-28"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
       >
-        <div className="mx-auto w-full max-w-2xl space-y-8">
+        <div className="mx-auto w-full max-w-2xl flex flex-col gap-6">
+          {/* Header */}
           <div className="space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{event.title}</h1>
               <ApiKeyDialog eventId={event.id} hasSharedKey={hasSharedKey} />
             </div>
-            {event.description && <p className="text-muted-foreground">{event.description}</p>}
+            {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
           </div>
 
-          <div className="space-y-3">
+          {/* Submitted confirmation */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Thanks, {name}!</p>
@@ -203,14 +207,28 @@ export function EventPageClient({ event, slots, isCreator, hasSharedKey }: Event
             </div>
           </div>
 
+          {/* Share row */}
+          {isCreator && (
+            <div className="rounded-xl border bg-card p-4 space-y-3">
+              <p className="text-sm font-medium">Share this event</p>
+              <div className="flex gap-2">
+                <Input readOnly value={shareUrl} className="text-sm flex-1 min-w-0" />
+                <Button size="icon" variant="secondary" onClick={handleCopy} title={copied ? "Copied!" : "Copy link"}>
+                  {copied ? <CheckIcon /> : <CopyIcon />}
+                </Button>
+                <ShareButton url={shareUrl} title={event.title} />
+              </div>
+              <p className="text-xs text-muted-foreground">Share with participants to collect their availability.</p>
+            </div>
+          )}
+
+          {isCreator && <EditEventPanel eventId={event.id} initialTitle={event.title} initialDescription={event.description ?? ""} />}
           {isCreator && <ManageSlotsPanel eventId={event.id} slots={slots} />}
 
-          <div className="flex gap-3">
-            <Button className="flex-1" render={<Link href={`/event/${event.id}/results`} />}>
-              View Results
-              <span className="ml-2 text-xs opacity-40">↵</span>
-            </Button>
-          </div>
+          <Button className="w-full" size="lg" render={<Link href={`/event/${event.id}/results`} />}>
+            View Results
+            <span className="ml-2 text-xs opacity-40">↵</span>
+          </Button>
         </div>
 
         <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" onSend={handleAISend} onAudio={handleAIAudio} loading={aiLoading} error={aiError} />
@@ -220,37 +238,34 @@ export function EventPageClient({ event, slots, isCreator, hasSharedKey }: Event
 
   return (
     <motion.main
-      className="flex min-h-[100svh] flex-col p-6 pb-24"
+      className="min-h-[100svh] flex flex-col p-4 sm:p-6 pb-28"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
     >
-      <div className="mx-auto w-full max-w-2xl space-y-8">
+      <div className="mx-auto w-full max-w-2xl flex flex-col gap-6">
         {/* Header */}
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">{event.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{event.title}</h1>
             <ApiKeyDialog eventId={event.id} hasSharedKey={hasSharedKey} />
           </div>
-          {event.description && <p className="text-muted-foreground">{event.description}</p>}
+          {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
         </div>
 
         {/* Share section (creator only) */}
         {isCreator && (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <LinkIcon className="size-4" />
-              Share this event
-            </div>
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <p className="text-sm font-medium">Share this event</p>
             <div className="flex gap-2">
-              <Input readOnly value={shareUrl} className="text-sm" />
+              <Input readOnly value={shareUrl} className="text-sm flex-1 min-w-0" />
               <Button size="icon" variant="secondary" onClick={handleCopy} title={copied ? "Copied!" : "Copy link"}>
                 {copied ? <CheckIcon /> : <CopyIcon />}
               </Button>
               <ShareButton url={shareUrl} title={event.title} />
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Share with participants to collect votes.</p>
+              <p className="text-xs text-muted-foreground">Share with participants to collect their availability.</p>
               <Button variant="ghost" size="sm" render={<Link href={`/event/${event.id}/results`} />}>
                 Results →
               </Button>
@@ -258,24 +273,25 @@ export function EventPageClient({ event, slots, isCreator, hasSharedKey }: Event
           </div>
         )}
 
-        {isCreator && (
-          <ManageSlotsPanel eventId={event.id} slots={slots} />
-        )}
+        {isCreator && <EditEventPanel eventId={event.id} initialTitle={event.title} initialDescription={event.description ?? ""} />}
+        {isCreator && <ManageSlotsPanel eventId={event.id} slots={slots} />}
 
         {/* Name input */}
-        <div className="space-y-1.5">
-          <Label htmlFor="participant-name">Your name</Label>
-          <Input
-            id="participant-name"
-            placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoFocus={!existingParticipantId}
-          />
+        <div className="rounded-xl border bg-card p-4 space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="participant-name">Your name</Label>
+            <Input
+              id="participant-name"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus={!existingParticipantId}
+            />
+          </div>
         </div>
 
         {/* Availability */}
-        <div className="space-y-3">
+        <div className="rounded-xl border bg-card p-4 space-y-3">
           <div className="flex items-center justify-between">
             <Label>Your availability</Label>
             <span className="text-xs text-muted-foreground/50">

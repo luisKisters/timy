@@ -5,7 +5,7 @@ import { getPocketBaseAdmin } from "@/lib/pb-admin";
 import type { CreateEventInput } from "@/types";
 
 function computeExpiry(expiry: string): string | null {
-  if (expiry === "never") return null;
+  if (expiry === "never" || expiry === "auto") return null;
   const now = new Date();
   switch (expiry) {
     case "1d":
@@ -43,6 +43,16 @@ export async function createEvent(input: CreateEventInput) {
       start: startDate.toISOString(),
       end: endDate.toISOString(),
     });
+  }
+
+  // If expiry is "auto", compute from latest slot
+  if (input.expiry === "auto" && input.slots.length > 0) {
+    const latestSlotDate = input.slots.reduce((latest, s) => {
+      const d = new Date(`${s.date}T${s.endTime}:00`);
+      return d > latest ? d : latest;
+    }, new Date(0));
+    latestSlotDate.setDate(latestSlotDate.getDate() + 7);
+    await pb.collection("events").update(event.id, { expiry: latestSlotDate.toISOString() });
   }
 
   redirect(`/event/${event.id}?created=true`);

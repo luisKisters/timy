@@ -39,8 +39,8 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const rankedSlots = ranked.map((r) => r.slot);
 
   return (
-    <main className="min-h-[100svh] p-6 pb-8">
-      <div className="mx-auto w-full max-w-2xl space-y-8">
+    <main className="min-h-[100svh] p-4 sm:p-6 pb-8">
+      <div className="mx-auto w-full max-w-2xl flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
