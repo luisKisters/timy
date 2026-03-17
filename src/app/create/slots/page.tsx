@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlotPicker, type TimeSlot } from "@/components/slot-picker";
 import { SlotList } from "@/components/slot-list";
+import { AIInputBar } from "@/components/ai-input-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -24,7 +25,7 @@ function SlotsContent() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="flex min-h-screen items-center justify-center p-4 pb-24">
       <div className="w-full max-w-md space-y-4">
         <Card>
           <CardHeader>
@@ -60,6 +61,8 @@ function SlotsContent() {
           Create Event
         </Button>
       </div>
+
+      <AIInputBar placeholder="Describe times, e.g. 'weekday lunches next week'" />
     </main>
   );
 }

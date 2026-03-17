@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AIInputBar } from "@/components/ai-input-bar";
 import { mockEvent } from "@/lib/mock-data";
 
 export default function EventPage() {
@@ -26,7 +27,7 @@ export default function EventPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="flex min-h-screen items-center justify-center p-4 pb-24">
       <div className="w-full max-w-md space-y-4">
         <EventHeader
           title={mockEvent.title}
@@ -75,6 +76,8 @@ export default function EventPage() {
           Submit Availability
         </Button>
       </div>
+
+      <AIInputBar placeholder="Tell AI your availability, e.g. 'I'm free Tuesday lunch'" />
     </main>
   );
 }
