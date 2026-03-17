@@ -1,10 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { MockSlot } from "@/lib/mock-data";
+
+export interface SlotDisplay {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
 
 interface AvailabilityGridProps {
-  slots: MockSlot[];
+  slots: SlotDisplay[];
   selected: Set<string>;
   onToggle: (slotId: string) => void;
 }
