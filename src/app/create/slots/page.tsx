@@ -104,73 +104,79 @@ function SlotsContent() {
   }
 
   return (
-    <main className="min-h-[100svh] flex flex-col p-4 sm:p-6 pb-28">
-      <div className="mx-auto w-full max-w-2xl flex flex-col gap-6 flex-1">
-        {/* Back link */}
-        <div>
+    <main className="flex flex-col overflow-hidden" style={{ height: "100dvh", touchAction: "none" }}>
+      {/* Header */}
+      <div className="shrink-0 px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+        <div className="mx-auto max-w-2xl space-y-1">
           <Link
             href={`/create?${backParams}`}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             ← Back &amp; edit event details
           </Link>
-        </div>
-
-        {/* Header */}
-        <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
           <p className="text-sm text-muted-foreground">Pick the time slots participants can vote on.</p>
         </div>
-
-        {/* Expiry selection */}
-        <div className="rounded-xl border bg-card p-4 space-y-3">
-          <p className="text-sm font-medium">Poll closes</p>
-          <div className="flex gap-2 flex-wrap">
-            {EXPIRY_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setExpiry(opt.value)}
-                className={cn(
-                  "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                  expiry === opt.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Slot picker — fixed height scrollable */}
-        <div className="max-h-[50vh] overflow-y-auto overscroll-contain rounded-xl border p-4">
-          <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
-        </div>
-
-        {aiError && (
-          <p className="text-sm text-destructive">{aiError}</p>
-        )}
-
-        <Button
-          className="w-full"
-          size="lg"
-          disabled={slots.length === 0 || isPending}
-          onClick={handleCreate}
-          data-loading={isPending || undefined}
-        >
-          {isPending ? "Creating..." : `Create Event · ${slots.length} slot${slots.length !== 1 ? "s" : ""}`}
-          {!isPending && slots.length > 0 && <span className="ml-2 text-xs opacity-40">⌘↵</span>}
-        </Button>
       </div>
 
-      <AIInputBar
-        placeholder="e.g. 'Wednesday and Thursday lunches next week'"
-        onSend={handleAISend}
-        onAudio={handleAIAudio}
-        loading={aiLoading}
-      />
+      {/* Scrollable content */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto"
+        style={{ touchAction: "pan-y" }}
+        data-scrollable="true"
+      >
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-3 space-y-4">
+          {/* Expiry */}
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <p className="text-sm font-medium">Poll closes</p>
+            <div className="flex gap-2 flex-wrap">
+              {EXPIRY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setExpiry(opt.value)}
+                  className={cn(
+                    "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                    expiry === opt.value
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-transparent text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Slot picker */}
+          <div className="rounded-xl border p-4">
+            <SlotPicker slots={slots} onAddSlot={handleAddSlot} onRemove={handleRemove} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer: AI bar on top, create button below */}
+      <div className="shrink-0 px-4 sm:px-6 pt-2 pb-4 space-y-2">
+        <div className="mx-auto max-w-2xl space-y-2">
+          <AIInputBar
+            placeholder="e.g. 'Wednesday and Thursday lunches next week'"
+            onSend={handleAISend}
+            onAudio={handleAIAudio}
+            loading={aiLoading}
+            error={aiError}
+          />
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={slots.length === 0 || isPending}
+            onClick={handleCreate}
+            data-loading={isPending || undefined}
+          >
+            {isPending ? "Creating..." : `Create Event · ${slots.length} slot${slots.length !== 1 ? "s" : ""}`}
+            {!isPending && slots.length > 0 && <span className="ml-2 text-xs opacity-40">⌘↵</span>}
+          </Button>
+        </div>
+      </div>
     </main>
   );
 }

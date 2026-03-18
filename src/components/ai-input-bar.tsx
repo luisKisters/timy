@@ -2,9 +2,7 @@
 
 import { useState, useRef } from "react";
 import { LoaderIcon, MicIcon, SendIcon, SquareIcon } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ApiKeyDialog } from "@/components/api-key-dialog";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +12,8 @@ interface AIInputBarProps {
   placeholder?: string;
   loading?: boolean;
   error?: string | null;
+  eventId?: string;
+  hasSharedKey?: boolean;
 }
 
 export function AIInputBar({
@@ -22,6 +22,8 @@ export function AIInputBar({
   placeholder = "Ask AI to help with scheduling...",
   loading = false,
   error = null,
+  eventId,
+  hasSharedKey,
 }: AIInputBarProps) {
   const [message, setMessage] = useState("");
   const [recording, setRecording] = useState(false);
@@ -29,16 +31,26 @@ export function AIInputBar({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function adjustHeight() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  }
 
   function handleSend() {
     if (!message.trim() || loading) return;
     onSend?.(message.trim());
     setMessage("");
+    requestAnimationFrame(() => {
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+    });
   }
 
   async function handleMic() {
     if (recording) {
-      // Stop recording
       mediaRecorderRef.current?.stop();
       return;
     }
@@ -62,56 +74,56 @@ export function AIInputBar({
       setRecordingSeconds(0);
       timerRef.current = setInterval(() => setRecordingSeconds((s) => s + 1), 1000);
     } catch {
-      // mic permission denied — ignore
+      // mic permission denied
     }
   }
 
   return (
-    <motion.div
-      className="fixed inset-x-0 bottom-0 z-50 p-4"
-      initial={{ y: 80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
-    >
+    <div className="space-y-1.5">
       {error && (
-        <div className="mx-auto mb-2 max-w-md rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {error}
         </div>
       )}
       <div className={cn(
-        "mx-auto flex max-w-md items-center gap-2 rounded-xl border bg-card/90 p-2 shadow-lg backdrop-blur-lg transition-colors",
+        "flex items-end gap-2 rounded-xl border bg-card/90 p-2 shadow-md backdrop-blur-sm transition-colors",
         recording && "border-red-500/40 bg-red-500/5"
       )}>
-        <ApiKeyDialog />
+        <ApiKeyDialog eventId={eventId} hasSharedKey={hasSharedKey} />
         {recording ? (
-          <div className="flex flex-1 items-center gap-2 px-2">
+          <div className="flex flex-1 items-center gap-2 px-2 py-1.5">
             <span className="size-2 animate-pulse rounded-full bg-red-500" />
             <span className="text-sm text-muted-foreground">
               {String(Math.floor(recordingSeconds / 60)).padStart(2, "0")}:{String(recordingSeconds % 60).padStart(2, "0")}
             </span>
-            <span className="text-xs text-muted-foreground">Recording… tap ■ to send</span>
+            <span className="text-xs text-muted-foreground">Tap ■ to send</span>
           </div>
         ) : (
-          <Input
+          <textarea
+            ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => { setMessage(e.target.value); adjustHeight(); }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
             }}
             placeholder={placeholder}
             disabled={loading}
-            className="border-0 bg-transparent shadow-none focus-visible:ring-0"
+            rows={1}
+            className="flex-1 resize-none overflow-hidden bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
+            style={{ height: "auto", minHeight: "2rem", maxHeight: "7.5rem" }}
           />
         )}
-        <Button size="icon" variant={recording ? "destructive" : "ghost"} onClick={handleMic} disabled={loading}>
-          {recording ? <SquareIcon className="size-4" /> : <MicIcon />}
-        </Button>
-        {!recording && (
-          <Button size="icon" disabled={!message.trim() || loading} onClick={handleSend}>
-            {loading ? <LoaderIcon className="animate-spin" /> : <SendIcon />}
+        <div className="flex shrink-0 items-center gap-1">
+          <Button size="icon" variant={recording ? "destructive" : "ghost"} onClick={handleMic} disabled={loading} className="size-8">
+            {recording ? <SquareIcon className="size-3.5" /> : <MicIcon className="size-3.5" />}
           </Button>
-        )}
+          {!recording && (
+            <Button size="icon" disabled={!message.trim() || loading} onClick={handleSend} className="size-8">
+              {loading ? <LoaderIcon className="size-3.5 animate-spin" /> : <SendIcon className="size-3.5" />}
+            </Button>
+          )}
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
