@@ -21,6 +21,7 @@ import { parseAvailability, transcribeAndParseAvailability } from "@/lib/ai-clie
 import { getOrMigrateAIConfig } from "@/lib/ai-config";
 import { saveRecentEvent } from "@/lib/recent-events";
 import { ShareButton } from "@/components/share-button";
+import { GcalButton } from "@/components/gcal-button";
 
 interface EventPageClientProps {
   event: Event;
@@ -75,6 +76,20 @@ export function EventPageClient({ event, slots, isCreator: isCreatorProp, hasSha
       setName(identity.name);
       setSelected(new Set(identity.selectedSlotIds));
       setExistingParticipantId(identity.id);
+    }
+
+    // Handle Google Calendar availability result from OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const gcalAvailable = params.get("gcal_available");
+    if (gcalAvailable !== null) {
+      if (gcalAvailable !== "none") {
+        const ids = gcalAvailable.split(",").filter(Boolean);
+        setSelected(new Set(ids));
+      }
+      // Clean the URL
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete("gcal_available");
+      window.history.replaceState(null, "", clean.toString());
     }
   }, [event.id, isCreatorProp]);
 
@@ -227,10 +242,13 @@ export function EventPageClient({ event, slots, isCreator: isCreatorProp, hasSha
           <div className="rounded-xl border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between">
               <Label>Your availability</Label>
-              <span className="text-xs text-muted-foreground/50">
-                {selected.size > 0 ? `${selected.size} selected` : "tap to select"}
-                {" · "}⎋ to clear
-              </span>
+              <div className="flex items-center gap-2">
+                <GcalButton eventId={event.id} slots={slots} />
+                <span className="text-xs text-muted-foreground/50">
+                  {selected.size > 0 ? `${selected.size} selected` : "tap to select"}
+                  {" · "}⎋ to clear
+                </span>
+              </div>
             </div>
             <AvailabilityGrid slots={displaySlots} selected={selected} onToggle={handleToggle} />
           </div>
