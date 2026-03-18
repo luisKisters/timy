@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SwRegister } from "@/components/sw-register";
+import { ScrollLock } from "@/components/scroll-lock";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,11 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{ height: "100%", overflow: "hidden" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ height: "100%", overflow: "hidden", margin: 0, touchAction: "none" }}
       >
         <SwRegister />
+        <ScrollLock />
         {children}
       </body>
     </html>

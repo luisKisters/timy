@@ -1,4 +1,4 @@
-const CACHE_NAME = "timy-v1";
+const CACHE_NAME = "timy-v3";
 const STATIC_ASSETS = ["/", "/create"];
 
 self.addEventListener("install", (event) => {
