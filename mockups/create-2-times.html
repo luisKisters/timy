@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timy — Create · Step 2: Pick times</title>
+<link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+<div class="page">
+  <div class="crumbs"><a href="index.html">← All screens</a> <span>/</span> Create · Step 2 · Pick times</div>
+  <div class="page-head">
+    <h1>Create · Step 2 — Pick times</h1>
+    <p>Separate floating time cards (scroll), with <b>Done / + Add</b> sticky at the bottom. Day switching is on the date strip — no prev/next buttons. <b>+ Add</b> opens a sheet: single, a <b>range</b> (pick which days + window), or <b>check calendar</b> (set days + working hours first, then it returns an obvious <b>all-green</b> list).</p>
+  </div>
+
+  <div class="gallery">
+
+    <!-- A — separate floating cards -->
+    <div class="variant">
+      <div class="label"><span class="v">A</span> Floating cards · recommended</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="back">←</div>
+              <div class="spacer"></div>
+              <div class="stepper" style="width:120px"><div class="bars"><i class="on"></i><i class="on"></i><i></i></div><span class="lbl">2/3</span></div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d"><small>MON</small><b>16</b></div>
+                <div class="d is-active"><small>TUE</small><b>17</b><span class="n">3</span></div>
+                <div class="d"><small>WED</small><b>18</b><span class="n" style="color:var(--ok-strong)">2</span></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div class="headrow"><h2>Select times</h2><span class="muted" style="font-size:12.5px">3 picked</span></div>
+              <div class="stack-sm" style="display:flex;flex-direction:column;gap:9px">
+                <div class="slot"><div class="when"><b>1:30 – 2:00 PM</b></div><div class="tick"></div></div>
+                <div class="slot"><div class="when"><b>2:00 – 2:30 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>2:30 – 3:00 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>3:00 – 3:30 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>3:30 – 4:00 PM</b></div><div class="tick"></div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">Done →</button>
+              <button class="btn btn-primary btn-lg btn-block">+ Add times</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Each time is its own card; the list scrolls, the two buttons stay sticky. Days switch on the strip.</div>
+    </div>
+
+    <!-- B — Add sheet -->
+    <div class="variant">
+      <div class="label"><span class="v">B</span> "+ Add" sheet</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="back">←</div><div class="spacer"></div>
+              <div class="stepper" style="width:120px"><div class="bars"><i class="on"></i><i class="on"></i><i></i></div><span class="lbl">2/3</span></div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b></div>
+                <div class="d"><small>WED</small><b>18</b></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div class="headrow"><h2>Select times</h2></div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div class="slot"><div class="when"><b>2:00 – 2:30 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">Done →</button>
+              <button class="btn btn-primary btn-lg btn-block">+ Add times</button>
+            </div>
+          </div>
+          <div class="sheet-scrim"></div>
+          <div class="sheet">
+            <div class="grip"></div>
+            <h4>Add times</h4>
+            <p class="sub">How do you want to add slots?</p>
+            <div class="sheet-opt">
+              <div class="ico">📅</div>
+              <div class="txt"><b>Check my calendar</b><span>Suggest the times you're free</span></div>
+              <span class="chev">›</span>
+            </div>
+            <div class="sheet-opt">
+              <div class="ico">➕</div>
+              <div class="txt"><b>Add a single time</b><span>Pick one slot</span></div>
+              <span class="chev">›</span>
+            </div>
+            <div class="sheet-opt">
+              <div class="ico">🗂</div>
+              <div class="txt"><b>Add multiple times</b><span>A range across the days you pick</span></div>
+              <span class="chev">›</span>
+            </div>
+            <div class="sheet-opt is-disabled">
+              <div class="ico">✨</div>
+              <div class="txt"><b>Ask AI</b><span>Describe it in words</span></div>
+              <span class="soon">Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">The + Add menu. Calendar is the smart path; AI is parked as "Soon."</div>
+    </div>
+
+    <!-- C — Add multiple (range) -->
+    <div class="variant">
+      <div class="label"><span class="v">C</span> "Add multiple" — range + days</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="back">←</div><div class="spacer"></div>
+              <div class="stepper" style="width:120px"><div class="bars"><i class="on"></i><i class="on"></i><i></i></div><span class="lbl">2/3</span></div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b></div>
+                <div class="d is-active"><small>WED</small><b>18</b></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div class="headrow"><h2>Select times</h2></div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">Done →</button>
+              <button class="btn btn-primary btn-lg btn-block">+ Add times</button>
+            </div>
+          </div>
+          <div class="sheet-scrim"></div>
+          <div class="sheet">
+            <div class="grip"></div>
+            <h4>Add multiple times</h4>
+            <p class="sub">Create a run of slots across the days you choose.</p>
+            <div class="field" style="margin-top:4px">
+              <div class="lab">On which days</div>
+              <div class="chips">
+                <span class="chip is-active">Tue</span>
+                <span class="chip is-active">Wed</span>
+                <span class="chip">Thu</span>
+                <span class="chip">Fri</span>
+              </div>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <div class="lab" style="margin-bottom:7px">Time window</div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div class="input" style="flex:1;text-align:center;font-weight:600">2:00 PM</div>
+                <span style="color:var(--muted)">–</span>
+                <div class="input" style="flex:1;text-align:center;font-weight:600">4:00 PM</div>
+              </div>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <div class="lab" style="margin-bottom:7px">Every</div>
+              <div class="chips">
+                <span class="chip">15 min</span>
+                <span class="chip is-active">30 min</span>
+                <span class="chip">45 min</span>
+                <span class="chip">60 min</span>
+              </div>
+            </div>
+            <div class="panel-soft" style="margin-top:13px;text-align:center;font-size:13px"><b>Adds 8 slots</b> · 4 times × 2 days</div>
+            <button class="btn btn-ok btn-lg btn-block" style="margin-top:12px">Add 8 slots</button>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Range picker with a "which days" selector. The Add button is green — it's a batch add.</div>
+    </div>
+
+    <!-- D — Check calendar config -->
+    <div class="variant">
+      <div class="label"><span class="v">D</span> "Check calendar" — set days + hours</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="back">←</div><div class="spacer"></div>
+              <div class="stepper" style="width:120px"><div class="bars"><i class="on"></i><i class="on"></i><i></i></div><span class="lbl">2/3</span></div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b></div>
+                <div class="d"><small>WED</small><b>18</b></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div class="headrow"><h2>Select times</h2></div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">Done →</button>
+              <button class="btn btn-primary btn-lg btn-block">+ Add times</button>
+            </div>
+          </div>
+          <div class="sheet-scrim"></div>
+          <div class="sheet">
+            <div class="grip"></div>
+            <h4>Check your calendar</h4>
+            <p class="sub">We'll only suggest free times inside this range.</p>
+            <div class="field" style="margin-top:4px">
+              <div class="lab">Which days</div>
+              <div class="chips">
+                <span class="chip is-active">Mon</span>
+                <span class="chip is-active">Tue</span>
+                <span class="chip is-active">Wed</span>
+                <span class="chip is-active">Thu</span>
+                <span class="chip is-active">Fri</span>
+                <span class="chip">Sat</span>
+                <span class="chip">Sun</span>
+              </div>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <div class="lab" style="margin-bottom:7px">Working hours</div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <div class="input" style="flex:1;text-align:center;font-weight:600">9:00 AM</div>
+                <span style="color:var(--muted)">–</span>
+                <div class="input" style="flex:1;text-align:center;font-weight:600">5:00 PM</div>
+              </div>
+            </div>
+            <div class="muted" style="font-size:11.5px;text-align:center;margin-top:10px">Looking at the next 2 weeks</div>
+            <button class="btn btn-ok btn-lg btn-block" style="margin-top:12px">Find free times</button>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Before pulling: pick the weekdays and working hours so it suggests real options, not junk.</div>
+    </div>
+
+    <!-- E — From calendar (all green) -->
+    <div class="variant">
+      <div class="label"><span class="v">E</span> From calendar · all green</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="back">←</div><div class="spacer"></div>
+              <div class="stepper" style="width:120px"><div class="bars"><i class="on"></i><i class="on"></i><i></i></div><span class="lbl">2/3</span></div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b></div>
+                <div class="d"><small>WED</small><b>18</b></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div>
+                <div class="headrow"><h2 style="color:var(--ok-strong)">From your calendar</h2></div>
+                <div class="muted" style="font-size:12.5px;margin:3px 2px 0">Free times Tue–Fri, 9 AM–5 PM · tap any to drop it</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div class="slot is-on"><div class="when"><b>10:00 – 10:30 AM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>11:00 – 11:30 AM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>2:00 – 2:30 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>2:30 – 3:00 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>4:00 – 4:30 PM</b></div><div class="tick">✓</div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">Cancel</button>
+              <button class="btn btn-ok btn-lg btn-block">Add 5 entries</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Calendar results are unmistakably green — cards and the green "Add entries" button — so it reads differently from a manual list.</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timy — Vote · Mark availability</title>
+<link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+<div class="page">
+  <div class="crumbs"><a href="index.html">← All screens</a> <span>/</span> Vote · Mark availability</div>
+  <div class="page-head">
+    <h1>Vote — Mark your availability</h1>
+    <p>Mirrors the host's pick-times screen: separate floating cards, day switching on the date strip (no prev/next). Tap <b>Auto-check calendar</b> (secondary) and every free time turns green — then <b>Submit</b>. No AI.</p>
+  </div>
+
+  <div class="gallery">
+
+    <!-- A — tap list -->
+    <div class="variant">
+      <div class="label"><span class="v">A</span> Tap list · recommended</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="ttl"><h3>Team Standup</h3><div class="meta">Hosted by Luis</div></div>
+              <div class="spacer"></div>
+              <div class="avstack">
+                <div class="av a1">L</div><div class="av a2">A</div><div class="av a3">M</div><div class="av a4">J</div>
+                <div class="av more" style="border:1.5px solid var(--border)">+1</div>
+              </div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b><span class="n">3</span></div>
+                <div class="d"><small>WED</small><b>18</b></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div class="headrow"><h2>When are you free?</h2></div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div class="slot"><div class="when"><b>1:30 – 2:00 PM</b></div><div class="tick"></div></div>
+                <div class="slot"><div class="when"><b>2:00 – 2:30 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>2:30 – 3:00 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>3:00 – 3:30 PM</b></div><div class="tick" style="background:var(--ok);border-color:var(--ok)">✓</div></div>
+                <div class="slot"><div class="when"><b>3:30 – 4:00 PM</b></div><div class="tick"></div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">📅 Auto-check calendar</button>
+              <button class="btn btn-primary btn-lg btn-block">Submit availability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Separate cards like the host's. Switch days on the strip; Auto-check + Submit sticky below.</div>
+    </div>
+
+    <!-- B — calendar auto-filled (green) -->
+    <div class="variant">
+      <div class="label"><span class="v">B</span> Calendar auto-filled · green</div>
+      <div class="phone tall">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="topbar">
+              <div class="ttl"><h3>Team Standup</h3><div class="meta">Hosted by Luis</div></div>
+              <div class="spacer"></div>
+              <div class="avstack">
+                <div class="av a1">L</div><div class="av a2">A</div><div class="av a3">M</div><div class="av a4">J</div>
+                <div class="av more" style="border:1.5px solid var(--border)">+1</div>
+              </div>
+            </div>
+            <div class="stream" style="gap:12px">
+              <div class="datestrip">
+                <div class="d is-active"><small>TUE</small><b>17</b><span class="n" style="color:var(--ok-strong)">5</span></div>
+                <div class="d"><small>WED</small><b>18</b><span class="n" style="color:var(--ok-strong)">4</span></div>
+                <div class="d"><small>THU</small><b>19</b></div>
+                <div class="d"><small>FRI</small><b>20</b></div>
+                <div class="d"><small>SAT</small><b>21</b></div>
+              </div>
+              <div>
+                <div class="headrow"><h2 style="color:var(--ok-strong)">From your calendar</h2></div>
+                <div class="muted" style="font-size:12.5px;margin:3px 2px 0">All your free times are selected · tap any to change</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div class="slot is-on"><div class="when"><b>1:30 – 2:00 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>2:00 – 2:30 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>2:30 – 3:00 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>3:00 – 3:30 PM</b></div><div class="tick">✓</div></div>
+                <div class="slot is-on"><div class="when"><b>3:30 – 4:00 PM</b></div><div class="tick">✓</div></div>
+              </div>
+            </div>
+            <div class="dock">
+              <button class="btn btn-secondary btn-block">📅 Auto-check calendar</button>
+              <button class="btn btn-primary btn-lg btn-block">Submit availability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">After Auto-check: green cards = pulled from your calendar. Tap any to drop it — no special "wrong" state.</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

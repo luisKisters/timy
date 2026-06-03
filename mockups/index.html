@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timy — UI Redesign Mockups</title>
+<link rel="stylesheet" href="theme.css" />
+<style>
+  .hero { display:flex; align-items:center; gap:16px; margin-bottom:10px; }
+  .hero .glyph { width:54px; height:54px; border-radius:16px; background:var(--brand); color:#fff; display:grid; place-items:center; font-size:30px; box-shadow:var(--shadow-md); }
+  .navgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:14px; margin-top:6px; }
+  .navcard { display:block; text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:18px; box-shadow:var(--shadow-sm); transition:transform .08s ease, box-shadow .15s ease, border-color .15s; }
+  .navcard:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--border-strong); }
+  .navcard .n { display:flex; align-items:center; gap:10px; }
+  .navcard .n .step { width:30px; height:30px; border-radius:9px; background:var(--brand-soft); color:var(--brand); display:grid; place-items:center; font-weight:800; font-size:14px; flex:0 0 auto; }
+  .navcard h3 { margin:0; font-size:16px; letter-spacing:-0.01em; }
+  .navcard p { margin:9px 0 0; font-size:13px; color:#6a6a72; line-height:1.5; }
+  .navcard .cnt { margin-top:12px; font-size:11.5px; font-weight:800; color:var(--brand); background:var(--brand-soft); display:inline-block; padding:3px 9px; border-radius:999px; }
+  .flow { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px; }
+  @media (max-width:760px){ .flow { grid-template-columns:1fr; } }
+  .flowcard { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--shadow-sm); }
+  .flowcard h3 { margin:0 0 4px; font-size:15px; }
+  .flowsteps { list-style:none; margin:12px 0 0; padding:0; }
+  .flowsteps li { display:flex; gap:11px; padding:9px 0; border-top:1px solid var(--border); font-size:13.5px; color:var(--fg-soft); line-height:1.45; }
+  .flowsteps li:first-child { border-top:0; }
+  .flowsteps li b { color:var(--fg); }
+  .flowsteps .k { width:24px; height:24px; flex:0 0 auto; border-radius:8px; background:var(--fg); color:#fff; display:grid; place-items:center; font-size:12px; font-weight:800; }
+  .flowsteps .k.ok { background:var(--ok-strong); }
+  .principles { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .principles .p { font-size:12.5px; font-weight:600; color:var(--fg-soft); background:var(--card); border:1px solid var(--border); border-radius:999px; padding:7px 13px; }
+  .swatches { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .sw { display:flex; align-items:center; gap:8px; font-size:12px; color:#6a6a72; background:var(--card); border:1px solid var(--border); padding:6px 11px 6px 7px; border-radius:999px; }
+  .sw i { width:18px; height:18px; border-radius:6px; display:block; }
+  .demos { display:flex; gap:24px; align-items:flex-end; flex-wrap:wrap; margin-top:8px; }
+  .demowrap { text-align:center; }
+  .demowrap .cap { font-size:12.5px; font-weight:700; color:#2c2c33; margin-bottom:10px; }
+  .demowrap .cap span { color:var(--brand); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="glyph">◷</div>
+    <div>
+      <h1 style="margin:0; font-size:32px; letter-spacing:-0.02em;">Timy — UI Redesign</h1>
+      <p style="margin:4px 0 0; color:#5d5d66;">Interactive HTML mockups · mobile-first · pick the directions you like</p>
+    </div>
+  </div>
+
+  <p style="color:#5d5d66; max-width:80ch; line-height:1.6; font-size:15px;">
+    A fresh, friendly take on Timy — clean enough for a kid or a grandparent to use, with one obvious next action on every screen.
+    Each screen below has <b>3–5 variations</b>. They all share one design system (<code>theme.css</code>), so you can mix and match: pick a layout per screen and I'll build the real app from your choices.
+  </p>
+
+  <div class="swatches">
+    <span class="sw"><i style="background:var(--brand)"></i> Brand / actions — indigo</span>
+    <span class="sw"><i style="background:var(--ok-strong)"></i> Availability — emerald</span>
+    <span class="sw"><i style="background:var(--bg);border:1px solid var(--border)"></i> Warm off-white surfaces</span>
+    <span class="sw"><i style="background:var(--fg)"></i> Near-black text</span>
+  </div>
+
+  <!-- ======================= THE FLOW ======================= -->
+  <div class="section-title"><h2>The flow</h2><span class="tag">think first</span></div>
+  <p class="section-note">
+    Two roles, one shell: a <b>content stream</b> in the middle and a <b>primary action pinned at the bottom</b>, with a <b>secondary button stacked above it</b>. The smart shortcut everywhere is your <b>Google Calendar</b> — check it to auto-suggest or pre-fill times. (AI is parked as "coming soon" for now.)
+  </p>
+  <div class="flow">
+    <div class="flowcard">
+      <h3>🗓️ Host — create a poll (3 steps → share)</h3>
+      <ul class="flowsteps">
+        <li><span class="k">1</span><div><b>Setup.</b> Name it, set when the poll closes &amp; the length of each slot.</div></li>
+        <li><span class="k">2</span><div><b>Times.</b> Pick days &amp; times by hand, or tap <b>+ Add → Check calendar</b> to pull your free times.</div></li>
+        <li><span class="k">3</span><div><b>Review.</b> Flip through days one at a time; confirm the locked times.</div></li>
+        <li><span class="k ok">✓</span><div><b>Share.</b> Share the link (primary) + fill out your own availability.</div></li>
+      </ul>
+    </div>
+    <div class="flowcard">
+      <h3>🙋 Participant — vote, then see the answer</h3>
+      <ul class="flowsteps">
+        <li><span class="k">1</span><div><b>Mark availability.</b> Tap the times you're free, one day at a time.</div></li>
+        <li><span class="k">2</span><div><b>Or check calendar.</b> "Check calendar automatically" pre-fills it — fix anything it got wrong.</div></li>
+        <li><span class="k ok">✓</span><div><b>Results.</b> The best time pops out — "Everyone's free Tuesday 2 PM." Host confirms, shares it &amp; adds to calendar.</div></li>
+      </ul>
+    </div>
+  </div>
+  <div class="principles">
+    <span class="p">📱 Mobile-first</span>
+    <span class="p">🎯 One clear action per screen</span>
+    <span class="p">⬇️ Primary always at the bottom, secondary above</span>
+    <span class="p">📅 Calendar-powered (AI coming later)</span>
+    <span class="p">🔒 Sign-in only at the very end (optional)</span>
+    <span class="p">👵 Kid- &amp; grandparent-proof</span>
+    <span class="p">🌍 English</span>
+  </div>
+
+  <!-- ======================= SCREENS ======================= -->
+  <div class="section-title"><h2>Screens &amp; variations</h2><span class="tag">open any →</span></div>
+  <p class="section-note">Click through each. Tell me which variation (A/B/C/D) wins per screen — or what to remix.</p>
+  <div class="navgrid">
+    <a class="navcard" href="home.html">
+      <div class="n"><span class="step">◷</span><h3>Home</h3></div>
+      <p>Landing — wordmark + recent meetings, with a single "Create meeting" button docked at the bottom.</p>
+      <span class="cnt">2 variations</span>
+    </a>
+    <a class="navcard" href="create-1-setup.html">
+      <div class="n"><span class="step">1</span><h3>Create · Setup</h3></div>
+      <p>Just the basics: meeting name, when the poll closes, and the length of each slot. No method choice.</p>
+      <span class="cnt">locked · A</span>
+    </a>
+    <a class="navcard" href="create-2-times.html">
+      <div class="n"><span class="step">2</span><h3>Create · Times</h3></div>
+      <p>Separate floating cards. The blue <b>+ Add</b> sheet does single / range (pick days) / <b>check calendar</b> (set days + hours → an all-green list).</p>
+      <span class="cnt">5 variations</span>
+    </a>
+    <a class="navcard" href="create-3-review.html">
+      <div class="n"><span class="step">3</span><h3>Create · Review</h3></div>
+      <p>Per-day review on the date strip; plain cards with a 🗑 to remove. Bottom: ← Back + Confirm.</p>
+      <span class="cnt">1 variation</span>
+    </a>
+    <a class="navcard" href="create-4-share.html">
+      <div class="n"><span class="step ok" style="background:var(--ok-soft);color:var(--ok-strong)">✓</span><h3>Create · Share</h3></div>
+      <p>Poll ready: <b>Share</b> (primary, opens the share sheet) + fill out your own availability.</p>
+      <span class="cnt">locked · A</span>
+    </a>
+    <a class="navcard" href="vote.html">
+      <div class="n"><span class="step">🙋</span><h3>Vote</h3></div>
+      <p>Mark when you're free, one day at a time. Secondary "Auto-check calendar" pre-fills it.</p>
+      <span class="cnt">2 variations</span>
+    </a>
+    <a class="navcard" href="results.html">
+      <div class="n"><span class="step ok" style="background:var(--ok-soft);color:var(--ok-strong)">✓</span><h3>Results</h3></div>
+      <p>Best-time hero → options matrix → confirmed state with a "share the time" message.</p>
+      <span class="cnt">4 variations</span>
+    </a>
+  </div>
+
+  <!-- ======================= RESPONSIVE BUTTON ======================= -->
+  <div class="section-title"><h2>The bottom button, across devices</h2><span class="tag">responsive</span></div>
+  <p class="section-note">
+    Your spec: the primary action fills the full width on a phone but doesn't stretch edge-to-edge on bigger screens — <b>100% on mobile</b>, <b>~75% centered on tablet</b>, <b>~55% centered on desktop</b>. The whole docked button stack (secondary above, primary below) follows the same max-width so it stays balanced.
+  </p>
+  <div class="demos">
+
+    <!-- Mobile -->
+    <div class="demowrap">
+      <div class="cap">Mobile — <span>100%</span></div>
+      <div class="phone" style="height:360px">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="stream center"><div class="center-col"><div class="badge ok">Everyone is available!</div><h3 class="h-md" style="margin-top:10px">Tue · 2:00 PM</h3></div></div>
+            <div class="dock">
+              <button class="btn btn-secondary" style="width:100%">📅 Check calendar</button>
+              <button class="btn btn-primary btn-lg" style="width:100%">Submit availability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tablet -->
+    <div class="demowrap">
+      <div class="cap">Tablet — <span>~75%</span></div>
+      <div class="demo-frame demo-tablet">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="stream center"><div class="center-col"><div class="badge ok">Everyone is available!</div><h3 class="h-lg" style="margin-top:10px">Tue · 2:00 PM</h3></div></div>
+            <div class="dock">
+              <button class="btn btn-secondary" style="width:75%;margin-inline:auto;display:flex">📅 Check calendar</button>
+              <button class="btn btn-primary btn-lg" style="width:75%;margin-inline:auto;display:flex">Submit availability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop -->
+    <div class="demowrap">
+      <div class="cap">Desktop — <span>~55%</span></div>
+      <div class="demo-frame demo-desktop">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="stream center"><div class="center-col"><div class="badge ok">Everyone is available!</div><h3 class="h-lg" style="margin-top:10px">Tue · 2:00 PM</h3></div></div>
+            <div class="dock">
+              <button class="btn btn-secondary" style="width:55%;margin-inline:auto;display:flex">📅 Check calendar</button>
+              <button class="btn btn-primary btn-lg" style="width:55%;margin-inline:auto;display:flex">Submit availability</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="margin-top:60px; color:#9a9aa2; font-size:13px; border-top:1px solid var(--border); padding-top:18px;">
+    Timy redesign mockups · static HTML, no build step · open any file directly in a browser.
+  </p>
+
+</div>
+</body>
+</html>

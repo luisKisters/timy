@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timy — Home</title>
+<link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+<div class="page">
+  <div class="crumbs"><a href="index.html">← All screens</a> <span>/</span> Home</div>
+  <div class="page-head">
+    <h1>Home</h1>
+    <p>The landing screen. Wordmark hero, optional recent events, and a single docked "Create meeting" button — the AI bar was removed (its job wasn't clear here). Two calm variations: one with recents, one stripped to almost nothing.</p>
+  </div>
+
+  <div class="gallery">
+
+    <!-- A — Wordmark + recents -->
+    <div class="variant">
+      <div class="label"><span class="v">A</span> Wordmark + recents</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="stream">
+
+              <!-- hero -->
+              <div class="center-col" style="padding-top:32px;padding-bottom:12px">
+                <div class="brandmark" style="font-size:22px;gap:9px">
+                  <div class="glyph" style="width:32px;height:32px;font-size:18px;border-radius:11px">◷</div>
+                  Timy
+                </div>
+                <p class="sub" style="text-align:center;margin-top:10px;font-size:13px;max-width:22ch">Find the perfect time to meet</p>
+              </div>
+
+              <!-- recent events -->
+              <div>
+                <div class="eyebrow" style="margin:0 2px 10px">Recent</div>
+                <div class="card flush">
+                  <div class="rows">
+                    <div class="row">
+                      <div class="avstack">
+                        <div class="av a1">L</div>
+                        <div class="av a2">A</div>
+                        <div class="av a3">M</div>
+                        <div class="av a4">J</div>
+                        <div class="av more">+1</div>
+                      </div>
+                      <div style="flex:1;min-width:0;margin-left:4px">
+                        <div class="h-md" style="font-size:14px">Team Standup</div>
+                        <div class="muted" style="font-size:12px;margin-top:2px">5 voted</div>
+                      </div>
+                      <span style="font-size:15px;color:var(--muted-2)">›</span>
+                    </div>
+                    <div class="row">
+                      <div class="avstack">
+                        <div class="av a5">S</div>
+                        <div class="av a6">R</div>
+                        <div class="av a2">A</div>
+                      </div>
+                      <div style="flex:1;min-width:0;margin-left:4px">
+                        <div class="h-md" style="font-size:14px">Weekend Trip Planning</div>
+                        <div class="muted" style="font-size:12px;margin-top:2px">in progress</div>
+                      </div>
+                      <span style="font-size:15px;color:var(--muted-2)">›</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="dock">
+              <button class="btn btn-primary btn-lg btn-block">Create meeting</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Hero wordmark, two recent events in a flush card, docked AI bar + action button.</div>
+    </div>
+
+    <!-- B — Ultra-minimal -->
+    <div class="variant">
+      <div class="label"><span class="v">B</span> Ultra-minimal</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar"><span>9:41</span><span class="dots">● ● ●</span></div>
+          <div class="app">
+            <div class="stream center">
+
+              <div class="center-col">
+                <div class="brandmark" style="font-size:24px;gap:10px">
+                  <div class="glyph" style="width:36px;height:36px;font-size:20px;border-radius:12px">◷</div>
+                  Timy
+                </div>
+                <p class="sub" style="text-align:center;margin-top:12px;font-size:13.5px;max-width:22ch">Find the perfect time to meet</p>
+                <button class="textlink" style="margin-top:20px">Recent meetings →</button>
+              </div>
+
+            </div>
+            <div class="dock">
+              <button class="btn btn-primary btn-lg btn-block">Create meeting</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="desc">Maximal calm — wordmark centred, one quiet text link, nothing else.</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
