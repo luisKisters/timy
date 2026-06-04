@@ -59,9 +59,11 @@
   flex-direction: column;
   height: 100dvh;
   max-height: 100dvh;
-  /* A centered, app-width column — never stretches across a wide desktop. */
+  /* A centered, app-width column — never stretches across a wide desktop.
+     ~30% wider than phone width so it reads as a real (bordered) desktop
+     surface rather than a cramped mobile strip. */
   width: 100%;
-  max-width: 480px;
+  max-width: 620px;
   margin-inline: auto;
   background: var(--bg);
   color: var(--fg);
@@ -70,8 +72,8 @@
   text-rendering: optimizeLegibility;
   overflow: hidden;
 }
-/* Delineate the column edges once there's room beside it. */
-@media (min-width: 520px) {
+/* Delineate the column edges once there's real room beside the wider column. */
+@media (min-width: 660px) {
   .timy-shell {
     border-inline: 1px solid var(--border);
   }
@@ -767,7 +769,7 @@
   border-radius: 26px 26px 0 0;
   padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -12px 44px rgba(0, 0, 0, 0.22);
-  max-width: 540px;
+  max-width: 620px;
   margin-inline: auto;
   max-height: 88dvh;
   overflow-y: auto;
