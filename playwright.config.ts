@@ -1,16 +1,31 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// E2E + per-phase server/action smoke tests. The webServer (next start) and a
-// controlled PocketBase are wired in Phase 11 when the happy-path E2E lands.
+const PB_URL = process.env.POCKETBASE_URL ?? "http://127.0.0.1:8090";
+
+// Happy-path E2E. Run against a controlled PocketBase by exporting
+// POCKETBASE_URL + POCKETBASE_AUTH_TOKEN (a superuser token) before `pnpm test:e2e`;
+// the dev webServer inherits them so server actions can read/write.
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: "list",
+  timeout: 60_000,
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000",
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  webServer: {
+    command: "pnpm dev",
+    url: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+    env: {
+      POCKETBASE_URL: PB_URL,
+      POCKETBASE_AUTH_TOKEN: process.env.POCKETBASE_AUTH_TOKEN ?? "",
+      NEXT_PUBLIC_POCKETBASE_URL: PB_URL,
+    },
+  },
 });
