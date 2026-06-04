@@ -1,11 +1,14 @@
-import { EventForm } from "@/components/event-form";
+"use client";
 
-export default function CreatePage() {
+import { useRouter } from "next/navigation";
+import { SetupConnected } from "@/components/create/setup-connected";
+
+export default function CreateSetupPage() {
+  const router = useRouter();
   return (
-    <main className="min-h-[100svh] p-4 sm:p-6">
-      <div className="mx-auto w-full max-w-lg">
-        <EventForm />
-      </div>
-    </main>
+    <SetupConnected
+      onBack={() => router.push("/")}
+      onContinue={() => router.push("/create/times")}
+    />
   );
 }
