@@ -9,7 +9,12 @@ export interface SlotCardProps {
   meta?: string;
   selected?: boolean;
   best?: boolean;
-  /** When provided, the whole card is a toggle button (emerald when selected). */
+  /**
+   * Full-green card (emerald background) when selected — used for from-calendar
+   * results. Manual picks stay a white card with just an emerald tick.
+   */
+  green?: boolean;
+  /** When provided, the whole card is a toggle button. */
   onToggle?: () => void;
   /** Right-aligned content for non-toggle cards (count, 🗑 remove). */
   trailing?: React.ReactNode;
@@ -21,13 +26,14 @@ export function SlotCard({
   meta,
   selected,
   best,
+  green,
   onToggle,
   trailing,
   className,
 }: SlotCardProps) {
   const classes = cn(
     "slot",
-    selected && "is-on",
+    selected && green && "is-on",
     best && "is-best",
     !onToggle && "is-plain",
     className,
@@ -40,7 +46,7 @@ export function SlotCard({
         {meta && <span>{meta}</span>}
       </span>
       {onToggle ? (
-        <span className="tick" aria-hidden="true">
+        <span className={cn("tick", selected && "is-checked")} aria-hidden="true">
           {selected ? "✓" : ""}
         </span>
       ) : (

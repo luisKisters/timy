@@ -1,6 +1,13 @@
 // Browser-mode test setup.
 //
-// vitest-browser-react auto-registers a cleanup() after each test, so we don't
-// need to wire that here. The ported design-system stylesheet is imported here
-// so computed-style fidelity assertions resolve against real CSS.
+// The ported design-system stylesheet is imported so computed-style fidelity
+// assertions resolve against real CSS.
+import { afterEach } from "vitest";
+import { cleanup } from "vitest-browser-react";
 import "@/styles/timy.css";
+
+// Explicit unmount between tests — guarantees fixed-position overlays
+// (bottom-sheet scrims) never leak into the next test's viewport.
+afterEach(() => {
+  cleanup();
+});

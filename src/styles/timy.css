@@ -461,7 +461,8 @@
   color: #fff;
   font-size: 14px;
 }
-.slot.is-on .tick {
+.slot.is-on .tick,
+.slot .tick.is-checked {
   background: var(--ok);
   border-color: var(--ok);
 }

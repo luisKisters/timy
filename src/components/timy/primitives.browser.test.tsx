@@ -93,7 +93,7 @@ describe("AppShell dock (fidelity)", () => {
 });
 
 describe("SlotCard", () => {
-  test("toggles to the emerald 'available' state on tap", async () => {
+  test("manual pick: white card + emerald tick on tap", async () => {
     function Wrap() {
       const [on, setOn] = useState(false);
       return (
@@ -102,19 +102,29 @@ describe("SlotCard", () => {
     }
     const screen = await render(<Wrap />);
     const slot = () => document.querySelector(".slot");
+    const tick = () => document.querySelector(".slot .tick");
 
-    // unselected: white card, not pressed
     expect(bg(slot())).toBe("rgb(255, 255, 255)");
     expect(slot()?.classList.contains("is-on")).toBe(false);
 
     await screen.getByRole("button", { name: /2:00/ }).click();
 
-    // selected: emerald soft (--ok-soft #e7f8f1), aria-pressed, is-on
     await expect
       .element(screen.getByRole("button", { name: /2:00/ }))
       .toHaveAttribute("aria-pressed", "true");
-    expect(slot()?.classList.contains("is-on")).toBe(true);
-    expect(bg(slot())).toBe("rgb(231, 248, 241)");
+    // card stays white, tick fills emerald (manual look ≠ calendar look)
+    expect(slot()?.classList.contains("is-on")).toBe(false);
+    expect(bg(slot())).toBe("rgb(255, 255, 255)");
+    expect(bg(tick())).toBe("rgb(16, 185, 129)"); // --ok #10b981
+  });
+
+  test("calendar result: green=selected renders a full emerald card", async () => {
+    await render(
+      <SlotCard label="10:00 – 10:30 AM" selected green onToggle={() => {}} />,
+    );
+    const slot = document.querySelector(".slot");
+    expect(slot?.classList.contains("is-on")).toBe(true);
+    expect(bg(slot)).toBe("rgb(231, 248, 241)"); // --ok-soft
   });
 
   test("renders a plain (non-toggle) card with custom trailing content", async () => {

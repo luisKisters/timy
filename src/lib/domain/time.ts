@@ -134,3 +134,18 @@ export function generateSlots(opts: GenerateSlotsOptions): GeneratedSlot[] {
   slots.sort((a, b) => a.start.localeCompare(b.start));
   return slots;
 }
+
+/** One slot from a calendar date ("YYYY-MM-DD") + start "HH:MM" + length. */
+export function slotAt(
+  dayKey: string,
+  startHHMM: string,
+  lengthMin: number,
+  tz: string,
+): GeneratedSlot {
+  const [y, m, d] = dayKey.split("-").map(Number);
+  const startMin = parseHHMM(startHHMM);
+  const endMin = startMin + lengthMin;
+  const start = zonedWallTimeToUtc(y, m, d, Math.floor(startMin / 60), startMin % 60, tz);
+  const end = zonedWallTimeToUtc(y, m, d, Math.floor(endMin / 60), endMin % 60, tz);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
