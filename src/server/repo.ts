@@ -1,5 +1,34 @@
+import type PocketBase from "pocketbase";
 import { getPocketBaseAdmin } from "@/lib/pb-admin";
 import type { Event, Participant, TimeSlot, Vote } from "@/types";
+
+/**
+ * Create many records in a single batch request (one round-trip — kills N+1),
+ * falling back to parallel individual creates when the server has the batch API
+ * disabled (403) or missing (404). Either way, no sequential waterfall.
+ */
+export async function createMany(
+  pb: PocketBase,
+  collection: string,
+  records: Record<string, unknown>[],
+): Promise<string[]> {
+  if (records.length === 0) return [];
+  try {
+    const batch = pb.createBatch();
+    for (const record of records) batch.collection(collection).create(record);
+    const results = await batch.send();
+    return results.map((r) => r.body.id as string);
+  } catch (err) {
+    const status = (err as { status?: number })?.status;
+    if (status === 403 || status === 404) {
+      const created = await Promise.all(
+        records.map((record) => pb.collection(collection).create(record)),
+      );
+      return created.map((c) => c.id);
+    }
+    throw err;
+  }
+}
 
 export interface NewSlot {
   start: string;
@@ -31,17 +60,15 @@ export async function createEventWithSlots(
     expiry: input.expiry,
   });
 
-  const slotIds: string[] = [];
-  if (input.slots.length > 0) {
-    const batch = pb.createBatch();
-    for (const slot of input.slots) {
-      batch
-        .collection("time_slots")
-        .create({ event_id: event.id, start: slot.start, end: slot.end });
-    }
-    const results = await batch.send();
-    for (const r of results) slotIds.push(r.body.id as string);
-  }
+  const slotIds = await createMany(
+    pb,
+    "time_slots",
+    input.slots.map((slot) => ({
+      event_id: event.id,
+      start: slot.start,
+      end: slot.end,
+    })),
+  );
 
   return { eventId: event.id, slotIds };
 }
@@ -96,19 +123,15 @@ export async function createParticipantWithVotes(
   const available = new Set(input.availableSlotIds);
   const slotIds = input.allSlotIds ?? input.availableSlotIds;
 
-  const voteIds: string[] = [];
-  if (slotIds.length > 0) {
-    const batch = pb.createBatch();
-    for (const slotId of slotIds) {
-      batch.collection("votes").create({
-        participant_id: participant.id,
-        slot_id: slotId,
-        available: available.has(slotId),
-      });
-    }
-    const results = await batch.send();
-    for (const r of results) voteIds.push(r.body.id as string);
-  }
+  const voteIds = await createMany(
+    pb,
+    "votes",
+    slotIds.map((slotId) => ({
+      participant_id: participant.id,
+      slot_id: slotId,
+      available: available.has(slotId),
+    })),
+  );
 
   return { participantId: participant.id, voteIds };
 }
