@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Timy",
-  description: "AI-assisted scheduling poll",
+  description: "Find the perfect time to meet",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Timy" },
 };
@@ -27,10 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" style={{ height: "100%", overflow: "hidden" }}>
+    <html lang="en" style={{ height: "100%", overflow: "hidden" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ height: "100%", overflow: "hidden", margin: 0, touchAction: "none" }}
+        style={{
+          height: "100%",
+          overflow: "hidden",
+          margin: 0,
+          touchAction: "none",
+          background: "var(--bg)",
+        }}
       >
         <SwRegister />
         <ScrollLock />

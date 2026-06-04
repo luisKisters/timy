@@ -1,21 +1,33 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { RecentEvents } from "@/components/recent-events";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { HomeScreen } from "@/components/home/home-screen";
+import { getRecentEvents, type RecentEvent } from "@/lib/recent-events";
+import { beginNewDraft } from "@/lib/create-draft";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [recents, setRecents] = useState<RecentEvent[]>([]);
+
+  useEffect(() => {
+    setRecents(getRecentEvents());
+  }, []);
+
   return (
-    <main className="flex min-h-[100svh] flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-8 text-center">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-bold tracking-tight">Timy</h1>
-          <p className="text-muted-foreground">AI-assisted scheduling made simple</p>
-        </div>
-        <Button size="lg" className="w-full" render={<Link href="/create" />}>
-          Create Event
-          <span className="ml-2 text-xs opacity-40">↵</span>
-        </Button>
-        <RecentEvents />
-      </div>
-    </main>
+    <HomeScreen
+      recents={recents}
+      onCreate={() => {
+        try {
+          if (typeof window !== "undefined") {
+            beginNewDraft(window.sessionStorage, Date.now());
+          }
+        } catch {
+          // sessionStorage unavailable — the create flow will start a draft itself
+        }
+        router.push("/create");
+      }}
+      onOpenRecent={(id) => router.push(`/event/${id}`)}
+    />
   );
 }
