@@ -1,4 +1,5 @@
 import type PocketBase from "pocketbase";
+import { TARGET_RULES } from "./access-rules";
 
 /**
  * Idempotently create the four Timy collections (events, time_slots,
@@ -98,4 +99,16 @@ export async function ensureBatchEnabled(pb: PocketBase): Promise<void> {
   await pb.settings.update({
     batch: { enabled: true, maxRequests: 200, timeout: 30, maxBodySize: 0 },
   });
+}
+
+/**
+ * Apply the tightened (superuser-only list/create/update/delete) access rules
+ * from access-rules.ts. The admin client bypasses rules, so the app is
+ * unaffected; the browser never reads PocketBase directly.
+ */
+export async function applyAccessRules(pb: PocketBase): Promise<void> {
+  for (const [name, rules] of Object.entries(TARGET_RULES)) {
+    const col = await pb.collections.getOne(name);
+    await pb.collections.update(col.id, rules);
+  }
 }
