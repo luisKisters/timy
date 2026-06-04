@@ -59,12 +59,22 @@
   flex-direction: column;
   height: 100dvh;
   max-height: 100dvh;
+  /* A centered, app-width column — never stretches across a wide desktop. */
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--timy-font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
+}
+/* Delineate the column edges once there's room beside it. */
+@media (min-width: 520px) {
+  .timy-shell {
+    border-inline: 1px solid var(--border);
+  }
 }
 
 .topbar {
@@ -150,23 +160,12 @@
   padding: 10px 18px calc(14px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(to top, var(--bg) 72%, rgba(246, 246, 244, 0));
 }
-/* Stacked dock actions; responsive width narrows on tablet/desktop. */
+/* Stacked dock actions — full width of the (already capped) app column. */
 .dock-stack {
   display: flex;
   flex-direction: column;
   gap: 9px;
   width: 100%;
-}
-@media (min-width: 700px) {
-  .dock-stack {
-    width: 75%;
-    margin-inline: auto;
-  }
-}
-@media (min-width: 1024px) {
-  .dock-stack {
-    width: 60%;
-  }
 }
 /* Safety net: a secondary button always renders above the primary. */
 .dock-stack .btn-secondary {

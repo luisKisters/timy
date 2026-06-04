@@ -58,7 +58,7 @@ describe("AppShell dock (fidelity)", () => {
     expect(s.bottom).toBeLessThanOrEqual(p.top + 1);
   });
 
-  test("dock narrows from full width on phone to a centered column on desktop", async () => {
+  test("app column fills a phone but stays a centered, capped width on desktop", async () => {
     await render(
       <AppShell
         dock={
@@ -70,23 +70,19 @@ describe("AppShell dock (fidelity)", () => {
         <p>stream</p>
       </AppShell>,
     );
-    const ratio = () => {
-      const dock = document.querySelector(".dock") as HTMLElement;
-      const stack = document.querySelector(".dock-stack") as HTMLElement;
-      return (
-        stack.getBoundingClientRect().width / dock.getBoundingClientRect().width
-      );
-    };
+    const shell = () => document.querySelector(".timy-shell") as HTMLElement;
 
     await page.viewport(380, 800);
-    const phone = ratio();
-    await page.viewport(1280, 900);
-    const desktop = ratio();
+    const phone = shell().getBoundingClientRect();
+    expect(phone.width).toBeGreaterThan(360); // fills the phone viewport
 
-    // phone ≈ full width (minus the dock's side padding); desktop ≈ 60%
-    expect(phone).toBeGreaterThan(0.85);
-    expect(desktop).toBeLessThan(0.7);
-    expect(desktop).toBeLessThan(phone - 0.15);
+    await page.viewport(1280, 900);
+    const desktop = shell().getBoundingClientRect();
+    expect(desktop.width).toBeLessThanOrEqual(482); // capped (~480px + borders)
+    // and centered: near-equal gutters on both sides
+    const leftGap = desktop.left;
+    const rightGap = 1280 - desktop.right;
+    expect(Math.abs(leftGap - rightGap)).toBeLessThan(4);
 
     await page.viewport(390, 844); // reset for other tests
   });
