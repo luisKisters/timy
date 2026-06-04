@@ -6,7 +6,6 @@ import {
   AvatarStack,
   BottomSheet,
   Button,
-  SlotCard,
   Topbar,
 } from "@/components/timy";
 import { formatDayLong, formatTimeRange, shareMessage } from "@/lib/domain";
@@ -34,10 +33,52 @@ export interface ResultsScreenProps {
   onAddToCalendar: (slotId: string) => void;
   onShare?: (message: string) => void | Promise<void>;
   onCopy?: (message: string) => void | Promise<void>;
+  /** Invite link surfaced when there's no favorite yet. */
+  inviteUrl?: string;
+  /** Share the invite to bring more voters (Web Share API → clipboard fallback). */
+  onShareInvite?: () => void | Promise<void>;
 }
 
 function slotLabel(s: ScoredSlot, tz: string): string {
   return `${formatDayLong(s.start, tz)} · ${formatTimeRange(s.start, s.end, tz)}`;
+}
+
+/** "Everyone is available" only makes sense with 2+ voters; else show the count. */
+function availLine(s: ScoredSlot): string {
+  if (s.total >= 2 && s.available === s.total) return "Everyone is available";
+  return `${s.available} of ${s.total} available`;
+}
+
+/** A tappable option card — tap anywhere on it to pick that slot as the time. */
+function OptionCard({
+  s,
+  tz,
+  onPick,
+  best,
+}: {
+  s: ScoredSlot;
+  tz: string;
+  onPick: (slotId: string) => void;
+  best?: boolean;
+}) {
+  return (
+    <button type="button" className="slot" onClick={() => onPick(s.slotId)}>
+      <span className="when">
+        <b>{slotLabel(s, tz)}</b>
+        <span>{availLine(s)}</span>
+      </span>
+      {best ? (
+        <span className="badge ok">Best time</span>
+      ) : (
+        <span className="count">
+          <b style={{ color: "var(--ok-strong)" }}>
+            {s.available}/{s.total}
+          </b>
+          <span>free</span>
+        </span>
+      )}
+    </button>
+  );
 }
 
 export function ResultsScreen(props: ResultsScreenProps) {
@@ -49,6 +90,8 @@ export function ResultsScreen(props: ResultsScreenProps) {
   const resolved = scores.find((s) => s.slotId === resolvedSlotId) ?? null;
   const changed = !!(resolved && best && resolved.slotId !== best.slotId);
   const peopleVoted = participants.length;
+  // A "favorite" only means something once more than one person has weighed in.
+  const hasFavorite = peopleVoted >= 2 && !!best;
 
   const topbar = (
     <Topbar
@@ -59,6 +102,23 @@ export function ResultsScreen(props: ResultsScreenProps) {
       }
     />
   );
+
+  const handleShareInvite = async () => {
+    if (props.onShareInvite) {
+      await props.onShareInvite();
+      return;
+    }
+    const text = `Join "${title}" — find a time`;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share && props.inviteUrl) {
+        await navigator.share({ title, text, url: props.inviteUrl });
+      } else if (props.inviteUrl) {
+        await navigator.clipboard?.writeText(props.inviteUrl);
+      }
+    } catch {
+      /* share cancelled — no-op */
+    }
+  };
 
   // ---------- Confirmed ----------
   if (resolved) {
@@ -122,9 +182,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
             </div>
           )}
           <div style={{ fontSize: 12, color: "var(--ok-strong)", opacity: 0.75, marginTop: 10 }}>
-            {resolved.available === resolved.total && resolved.total > 0
-              ? "Everyone is available"
-              : `${resolved.available} of ${resolved.total} available`}
+            {availLine(resolved)}
           </div>
           <button type="button" className="textlink" style={{ marginTop: 8 }} onClick={() => setShareOpen(true)}>
             📤 Share the time
@@ -133,17 +191,18 @@ export function ResultsScreen(props: ResultsScreenProps) {
 
         <div className="dayhead">
           <b style={{ color: "var(--muted)" }}>Other options</b>
-          <span>not chosen</span>
+          <span>tap to switch</span>
         </div>
         {scores
           .filter((s) => s.slotId !== resolved.slotId)
           .map((s) => (
-            <div key={s.slotId} style={{ opacity: 0.4, pointerEvents: "none" }}>
-              <SlotCard
-                label={slotLabel(s, tz)}
-                meta={`${s.available} of ${s.total} available`}
-              />
-            </div>
+            <OptionCard
+              key={s.slotId}
+              s={s}
+              tz={tz}
+              onPick={props.onConfirm}
+              best={!!best && s.slotId === best.slotId}
+            />
           ))}
 
         <BottomSheet
@@ -193,9 +252,9 @@ export function ResultsScreen(props: ResultsScreenProps) {
         dock={
           <>
             <Button variant="secondary" block onClick={() => setShowMatrix(false)}>
-              ← Back to best slot
+              ← Back to overview
             </Button>
-            {best && (
+            {hasFavorite && best ? (
               <Button
                 variant="ok"
                 size="lg"
@@ -204,6 +263,10 @@ export function ResultsScreen(props: ResultsScreenProps) {
                 onClick={() => props.onConfirm(best.slotId)}
               >
                 Confirm {formatTimeRange(best.start, best.end, tz)}
+              </Button>
+            ) : (
+              <Button variant="primary" size="lg" block onClick={handleShareInvite}>
+                ⤴ Share
               </Button>
             )}
           </>
@@ -276,7 +339,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
     );
   }
 
-  // ---------- Best-slot hero (pre-confirm) ----------
+  // ---------- Overview (pre-confirm) ----------
   return (
     <AppShell
       topbar={topbar}
@@ -285,7 +348,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
           <Button variant="secondary" block onClick={() => setShowMatrix(true)}>
             See options matrix
           </Button>
-          {best && (
+          {hasFavorite && best ? (
             <Button
               variant="ok"
               size="lg"
@@ -295,11 +358,15 @@ export function ResultsScreen(props: ResultsScreenProps) {
             >
               Confirm {formatTimeRange(best.start, best.end, tz)}
             </Button>
+          ) : (
+            <Button variant="primary" size="lg" block onClick={handleShareInvite}>
+              ⤴ Share
+            </Button>
           )}
         </>
       }
     >
-      {best ? (
+      {hasFavorite && best ? (
         <>
           <div className="slot is-best" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, padding: 16 }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -320,7 +387,7 @@ export function ResultsScreen(props: ResultsScreenProps) {
               <i style={{ width: `${best.percentage}%` }} />
             </div>
             <span className="badge ok">
-              {best.available === best.total && best.total > 0
+              {best.total >= 2 && best.available === best.total
                 ? `Everyone is available! · ${best.available}/${best.total}`
                 : `${best.available} of ${best.total} available`}
             </span>
@@ -329,21 +396,29 @@ export function ResultsScreen(props: ResultsScreenProps) {
           {scores.length > 1 && (
             <div className="dayhead" style={{ marginTop: 2 }}>
               <b>Other options</b>
-              <span>ranked by availability</span>
+              <span>tap to pick · ranked by availability</span>
             </div>
           )}
           {scores.slice(1).map((s) => (
-            <SlotCard
-              key={s.slotId}
-              label={slotLabel(s, tz)}
-              meta={`${s.available} of ${s.total} available`}
-            />
+            <OptionCard key={s.slotId} s={s} tz={tz} onPick={props.onConfirm} />
           ))}
         </>
       ) : (
-        <p className="sub" style={{ marginTop: 8 }}>
-          No votes yet — share the poll so people can fill in their availability.
-        </p>
+        <>
+          <div className="empty-hero">
+            <b>No favorite yet</b>
+            <span>Invite more people so a best time can emerge.</span>
+          </div>
+          {scores.length > 0 && (
+            <div className="dayhead" style={{ marginTop: 2 }}>
+              <b>Pick a time</b>
+              <span>or wait for more votes</span>
+            </div>
+          )}
+          {scores.map((s) => (
+            <OptionCard key={s.slotId} s={s} tz={tz} onPick={props.onConfirm} />
+          ))}
+        </>
       )}
     </AppShell>
   );

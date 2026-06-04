@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ResultsScreen, type ScoredSlot } from "@/components/event/results-screen";
 import { rankSlots } from "@/lib/domain";
 import { downloadICS, generateICS } from "@/lib/ics";
@@ -38,6 +38,26 @@ export function ResultsConnected({
   const tz = useMemo(() => tzProp ?? localTz(), [tzProp]);
   const [resolvedSlotId, setResolvedSlotId] = useState<string | null>(initialResolvedSlotId);
   const [confirming, setConfirming] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState(`/event/${eventId}`);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setInviteUrl(`${window.location.origin}/event/${eventId}`);
+    }
+  }, [eventId]);
+
+  // Share the invite so more people vote (Web Share API → clipboard fallback).
+  const onShareInvite = async () => {
+    const text = `Join "${title}" — find a time`;
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title, text, url: inviteUrl });
+      } else {
+        await navigator.clipboard?.writeText(inviteUrl);
+      }
+    } catch {
+      /* share cancelled — no-op */
+    }
+  };
 
   const scores = useMemo<ScoredSlot[]>(() => {
     const tsSlots: TimeSlot[] = slots.map((s) => ({
@@ -125,6 +145,8 @@ export function ResultsConnected({
       onConfirm={onConfirm}
       onChangeTime={onChangeTime}
       onAddToCalendar={onAddToCalendar}
+      inviteUrl={inviteUrl}
+      onShareInvite={onShareInvite}
     />
   );
 }

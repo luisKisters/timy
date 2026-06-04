@@ -18,10 +18,8 @@ test("create → share → vote → results", async ({ page }) => {
   await page.getByLabel("Start time").fill("14:00");
   await page.getByRole("button", { name: "Add time", exact: true }).click();
   await expect(page.getByText(/2:00\s*–\s*2:30 PM/)).toBeVisible();
-  await page.getByRole("button", { name: /Done/ }).click();
 
-  // --- Create · Review → Confirm (persist) ---
-  await expect(page).toHaveURL(/\/create\/review/);
+  // --- Create · Confirm (persist) — goes straight to Share, no Review step ---
   await page.getByRole("button", { name: "Confirm" }).click();
 
   // --- Share ---
@@ -35,9 +33,11 @@ test("create → share → vote → results", async ({ page }) => {
   await page.getByRole("button", { name: /2:00\s*–\s*2:30 PM/ }).click();
   await page.getByRole("button", { name: "Submit availability" }).click();
 
-  // --- Results → Confirm ---
+  // --- Results → pick a time ---
+  // Only the creator has voted, so there's no favorite yet — pick a time by
+  // tapping its card (no Confirm button in the no-favorite state).
   await expect(page).toHaveURL(/\/results/);
-  await expect(page.getByText("Best time")).toBeVisible();
-  await page.getByRole("button", { name: /^Confirm / }).click();
+  await expect(page.getByText("No favorite yet")).toBeVisible();
+  await page.getByRole("button", { name: /2:00\s*–\s*2:30 PM/ }).click();
   await expect(page.getByText("Confirmed")).toBeVisible();
 });

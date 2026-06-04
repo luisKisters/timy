@@ -10,6 +10,7 @@ import {
   SlotCard,
   Stepper,
   Topbar,
+  TrashIcon,
 } from "@/components/timy";
 import type { DraftSlot } from "@/lib/create-draft";
 import type { CalendarConfig } from "@/lib/calendar-config";
@@ -42,7 +43,9 @@ export interface TimesScreenProps {
   slotLengthMin: number;
   onAddSlots: (slots: DraftSlot[]) => void;
   onRemoveSlot: (start: string) => void;
-  onDone: () => void;
+  /** Creates the poll and routes to Share (replaces the old Review step). */
+  onConfirm: () => void;
+  confirming?: boolean;
   onBack: () => void;
   /** Real app redirects to OAuth (never resolves); tests resolve with slots. */
   requestCalendarSuggestions: (config: CalendarConfig) => Promise<DraftSlot[]>;
@@ -62,7 +65,8 @@ export function TimesScreen({
   slotLengthMin,
   onAddSlots,
   onRemoveSlot,
-  onDone,
+  onConfirm,
+  confirming,
   onBack,
   requestCalendarSuggestions,
   initialSuggestions,
@@ -106,7 +110,7 @@ export function TimesScreen({
   if (suggestions) {
     return (
       <AppShell
-        topbar={<Topbar onBack={onBack} trailing={<Stepper total={3} current={2} label="2/3" />} />}
+        topbar={<Topbar onBack={onBack} trailing={<Stepper total={2} current={2} label="2/2" />} />}
         dock={
           <>
             <Button variant="secondary" block onClick={() => setSuggestions(null)}>
@@ -152,11 +156,16 @@ export function TimesScreen({
   // ---- normal picking mode ----
   return (
     <AppShell
-      topbar={<Topbar onBack={onBack} trailing={<Stepper total={3} current={2} label="2/3" />} />}
+      topbar={<Topbar onBack={onBack} trailing={<Stepper total={2} current={2} label="2/2" />} />}
       dock={
         <>
-          <Button variant="secondary" block onClick={onDone} disabled={slots.length === 0}>
-            Done →
+          <Button
+            variant="secondary"
+            block
+            onClick={onConfirm}
+            disabled={slots.length === 0 || confirming}
+          >
+            {confirming ? "Confirming…" : "Confirm"}
           </Button>
           <Button variant="primary" size="lg" block onClick={() => setSheet("menu")}>
             + Add times
@@ -183,14 +192,25 @@ export function TimesScreen({
 
       {current ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-          {current.slots.map((s) => (
-            <SlotCard
-              key={s.start}
-              label={formatTimeRange(s.start, s.end, tz)}
-              selected
-              onToggle={() => onRemoveSlot(s.start)}
-            />
-          ))}
+          {current.slots.map((s) => {
+            const label = formatTimeRange(s.start, s.end, tz);
+            return (
+              <SlotCard
+                key={s.start}
+                label={label}
+                trailing={
+                  <button
+                    type="button"
+                    className="trash"
+                    aria-label={`Remove ${label}`}
+                    onClick={() => onRemoveSlot(s.start)}
+                  >
+                    <TrashIcon />
+                  </button>
+                }
+              />
+            );
+          })}
         </div>
       ) : (
         <p className="sub" style={{ marginTop: 8 }}>

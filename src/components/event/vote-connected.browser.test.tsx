@@ -57,6 +57,43 @@ describe("VoteConnected", () => {
     expect(identity.evt1.selectedSlotIds).toEqual(["s1"]);
   });
 
+  test("prefills the creator's own name when this browser created the poll", async () => {
+    localStorage.setItem("timy-creator-evt3", "1");
+    const screen = await render(
+      <VoteConnected
+        eventId="evt3"
+        title="Standup"
+        hostName="Luis"
+        tz="America/New_York"
+        slots={SLOTS}
+        participantNames={[]}
+        submitVotes={vi.fn(async () => ({ participantId: "p_3" }))}
+        onSubmitted={() => {}}
+      />,
+    );
+    await expect
+      .element(screen.getByRole("textbox", { name: "Your name" }))
+      .toHaveValue("Luis");
+  });
+
+  test("does NOT prefill the host name for non-creators", async () => {
+    const screen = await render(
+      <VoteConnected
+        eventId="evt4"
+        title="Standup"
+        hostName="Luis"
+        tz="America/New_York"
+        slots={SLOTS}
+        participantNames={[]}
+        submitVotes={vi.fn(async () => ({ participantId: "p_4" }))}
+        onSubmitted={() => {}}
+      />,
+    );
+    await expect
+      .element(screen.getByRole("textbox", { name: "Your name" }))
+      .toHaveValue("");
+  });
+
   test("pre-ticks calendar-auto-checked slots from the URL", async () => {
     const submitVotes = vi.fn(async () => ({ participantId: "p_2" }));
     const screen = await render(
