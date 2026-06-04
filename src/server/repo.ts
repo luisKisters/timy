@@ -22,7 +22,7 @@ export interface CreateEventWithSlotsInput {
 export async function createEventWithSlots(
   input: CreateEventWithSlotsInput,
 ): Promise<{ eventId: string; slotIds: string[] }> {
-  const pb = getPocketBaseAdmin();
+  const pb = await getPocketBaseAdmin();
 
   const event = await pb.collection("events").create({
     title: input.title,
@@ -55,7 +55,7 @@ export interface EventBundle {
 
 /** Fetch everything needed to render an event (4 parallel queries, no N+1). */
 export async function getEventBundle(eventId: string): Promise<EventBundle> {
-  const pb = getPocketBaseAdmin();
+  const pb = await getPocketBaseAdmin();
   const [event, slots, participants, votes] = await Promise.all([
     pb.collection("events").getOne<Event>(eventId),
     pb.collection("time_slots").getFullList<TimeSlot>({
@@ -87,7 +87,7 @@ export interface CreateParticipantWithVotesInput {
 export async function createParticipantWithVotes(
   input: CreateParticipantWithVotesInput,
 ): Promise<{ participantId: string; voteIds: string[] }> {
-  const pb = getPocketBaseAdmin();
+  const pb = await getPocketBaseAdmin();
 
   const participant = await pb
     .collection("participants")
@@ -118,7 +118,7 @@ export async function setResolvedSlot(
   eventId: string,
   slotId: string | null,
 ): Promise<Event> {
-  const pb = getPocketBaseAdmin();
+  const pb = await getPocketBaseAdmin();
   return pb.collection("events").update<Event>(eventId, {
     resolved_slot: slotId,
   });
