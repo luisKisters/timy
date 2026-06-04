@@ -55,6 +55,14 @@ export function dayNumber(startISO: string, tz: string): number {
   );
 }
 
+/**
+ * Normalize a PocketBase datetime ("2024-03-18 14:00:00.000Z") to strict ISO
+ * ("2024-03-18T14:00:00.000Z") so every browser (incl. Safari/Firefox) parses it.
+ */
+export function pbToISO(value: string): string {
+  return value.includes("T") ? value : value.replace(" ", "T");
+}
+
 /** Stable per-day key (YYYY-MM-DD in tz) for grouping slots by day. */
 export function dayKey(startISO: string, tz: string): string {
   const map: Record<string, string> = {};

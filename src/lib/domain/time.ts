@@ -135,6 +135,40 @@ export function generateSlots(opts: GenerateSlotsOptions): GeneratedSlot[] {
   return slots;
 }
 
+const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** Local weekday (0 = Sun … 6 = Sat) of an instant in `tz`. */
+export function localWeekday(iso: string, tz: string): number {
+  const wd = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).format(
+    new Date(iso),
+  );
+  return WEEKDAY_NAMES.indexOf(wd);
+}
+
+/** Local minutes-from-midnight of an instant in `tz`. */
+export function localMinutes(iso: string, tz: string): number {
+  const map: Record<string, string> = {};
+  for (const p of new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hourCycle: "h23",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(new Date(iso))) {
+    map[p.type] = p.value;
+  }
+  return Number(map.hour) * 60 + Number(map.minute);
+}
+
+/** Whether a slot's start falls within the chosen weekdays + working-hours window. */
+export function slotWithinConfig(
+  startISO: string,
+  config: { weekdays: number[]; windowStart: string; windowEnd: string; tz: string },
+): boolean {
+  if (!config.weekdays.includes(localWeekday(startISO, config.tz))) return false;
+  const m = localMinutes(startISO, config.tz);
+  return m >= parseHHMM(config.windowStart) && m < parseHHMM(config.windowEnd);
+}
+
 /** One slot from a calendar date ("YYYY-MM-DD") + start "HH:MM" + length. */
 export function slotAt(
   dayKey: string,

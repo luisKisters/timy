@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { generateSlots, tzOffsetMs, zonedWallTimeToUtc } from "@/lib/domain/time";
+import {
+  generateSlots,
+  slotWithinConfig,
+  tzOffsetMs,
+  zonedWallTimeToUtc,
+} from "@/lib/domain/time";
 
 const BERLIN = "Europe/Berlin";
 const NY = "America/New_York";
@@ -110,5 +115,44 @@ describe("generateSlots", () => {
     expect(generateSlots({ ...base, weekdays: [] })).toEqual([]);
     expect(generateSlots({ ...base, weekdays: [1], windowEnd: "09:00" })).toEqual([]);
     expect(generateSlots({ ...base, weekdays: [1], intervalMin: 0 })).toEqual([]);
+  });
+});
+
+describe("slotWithinConfig", () => {
+  const NY = "America/New_York";
+  // 2024-03-18 is a Monday; 14:00Z = 10:00 EDT
+  const monMorning = "2024-03-18T14:00:00.000Z";
+
+  test("true when the slot's weekday + local time fall inside the window", () => {
+    expect(
+      slotWithinConfig(monMorning, {
+        weekdays: [1],
+        windowStart: "09:00",
+        windowEnd: "17:00",
+        tz: NY,
+      }),
+    ).toBe(true);
+  });
+
+  test("false when the weekday is not selected", () => {
+    expect(
+      slotWithinConfig(monMorning, {
+        weekdays: [2, 3],
+        windowStart: "09:00",
+        windowEnd: "17:00",
+        tz: NY,
+      }),
+    ).toBe(false);
+  });
+
+  test("false when outside the working-hours window", () => {
+    expect(
+      slotWithinConfig(monMorning, {
+        weekdays: [1],
+        windowStart: "11:00",
+        windowEnd: "17:00",
+        tz: NY,
+      }),
+    ).toBe(false);
   });
 });
