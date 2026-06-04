@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/timy.css";
 
 @source not "../../obsidian_context";
 
@@ -64,6 +65,10 @@
   }
 }
 
+/* Legacy shadcn/Base-UI tokens — layered so the unlayered Timy design-system
+   tokens (imported from timy.css) win the few overlapping names (--card,
+   --border, --muted). Removed with the old components in Phase 11. */
+@layer base {
 :root {
   --destructive-foreground: var(--color-red-700);
   --info: var(--color-blue-500);
@@ -151,6 +156,7 @@
   --sidebar-primary: var(--color-neutral-100);
   --sidebar-primary-foreground: var(--color-neutral-800);
   --sidebar-ring: var(--color-neutral-400);
+}
 }
 
 @layer base {

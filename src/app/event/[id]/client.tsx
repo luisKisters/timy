@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { AvailabilityGrid } from "@/components/availability-grid";
