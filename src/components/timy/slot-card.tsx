@@ -16,7 +16,7 @@ export interface SlotCardProps {
   green?: boolean;
   /** When provided, the whole card is a toggle button. */
   onToggle?: () => void;
-  /** Right-aligned content for non-toggle cards (count, 🗑 remove). */
+  /** Right-aligned content for non-toggle cards (count, remove button). */
   trailing?: React.ReactNode;
   className?: string;
 }

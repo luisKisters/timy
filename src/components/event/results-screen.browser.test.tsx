@@ -16,6 +16,12 @@ const AVAIL: Record<string, string[]> = {
 };
 const isAvailable = (pid: string, sid: string) => (AVAIL[sid] ?? []).includes(pid);
 
+// Realistic single-voter scores (one person → per-slot total is 1).
+const ONE_VOTER_SCORES: ScoredSlot[] = [
+  { slotId: "s1", start: "2024-03-18T14:00:00.000Z", end: "2024-03-18T14:30:00.000Z", available: 1, total: 1, percentage: 100 },
+  { slotId: "s2", start: "2024-03-19T15:00:00.000Z", end: "2024-03-19T15:30:00.000Z", available: 0, total: 1, percentage: 0 },
+];
+
 function Harness({
   resolvedSlotId = null,
   onConfirm = () => {},
@@ -91,5 +97,61 @@ describe("ResultsScreen", () => {
     const screen = await render(<Harness resolvedSlotId="s1" onAddToCalendar={onAddToCalendar} />);
     await screen.getByRole("button", { name: "Add to calendar" }).click();
     expect(onAddToCalendar).toHaveBeenCalledWith("s1");
+  });
+
+  test("tapping an 'other option' card picks that slot", async () => {
+    const onConfirm = vi.fn();
+    const screen = await render(<Harness onConfirm={onConfirm} />);
+    // s2 is rendered as a tappable card (button) under "Other options".
+    await screen.getByRole("button", { name: /Tuesday, Mar 19/ }).click();
+    expect(onConfirm).toHaveBeenCalledWith("s2");
+  });
+
+  test("changed confirmation keeps a 'Best time' badge on the best card", async () => {
+    const screen = await render(<Harness resolvedSlotId="s2" />);
+    await expect.element(screen.getByText("Best time")).toBeVisible();
+  });
+
+  test("with only one voter: no-favorite placeholder + Share, no 'everyone available'", async () => {
+    const onShareInvite = vi.fn();
+    const screen = await render(
+      <ResultsScreen
+        title="Team Standup"
+        tz={TZ}
+        scores={ONE_VOTER_SCORES}
+        participants={[{ id: "p0", name: "L" }]}
+        isAvailable={() => true}
+        resolvedSlotId={null}
+        onConfirm={() => {}}
+        onChangeTime={() => {}}
+        onAddToCalendar={() => {}}
+        onShareInvite={onShareInvite}
+      />,
+    );
+    await expect.element(screen.getByText("No favorite yet")).toBeVisible();
+    const text = document.body.textContent ?? "";
+    expect(text).not.toMatch(/Everyone is available/);
+    expect(text).not.toMatch(/Best time/);
+    await screen.getByRole("button", { name: /Share/ }).click();
+    expect(onShareInvite).toHaveBeenCalled();
+  });
+
+  test("with one voter you can still pick a time by tapping a card", async () => {
+    const onConfirm = vi.fn();
+    const screen = await render(
+      <ResultsScreen
+        title="Team Standup"
+        tz={TZ}
+        scores={ONE_VOTER_SCORES}
+        participants={[{ id: "p0", name: "L" }]}
+        isAvailable={() => true}
+        resolvedSlotId={null}
+        onConfirm={onConfirm}
+        onChangeTime={() => {}}
+        onAddToCalendar={() => {}}
+      />,
+    );
+    await screen.getByRole("button", { name: /Monday, Mar 18/ }).click();
+    expect(onConfirm).toHaveBeenCalledWith("s1");
   });
 });

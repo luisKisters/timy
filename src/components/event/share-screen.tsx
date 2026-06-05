@@ -51,7 +51,7 @@ export function ShareScreen({
   return (
     <AppShell
       topbar={
-        <Topbar onBack={onBack} trailing={<Stepper total={3} current={3} label="Done ✓" />} />
+        <Topbar onBack={onBack} trailing={<Stepper total={2} current={2} label="Done ✓" />} />
       }
       center
       dock={

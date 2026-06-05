@@ -36,7 +36,7 @@ function Harness({
         });
       }}
       onRemoveSlot={(start) => setSlots((prev) => prev.filter((x) => x.start !== start))}
-      onDone={onDone}
+      onConfirm={onDone}
       onBack={() => {}}
       requestCalendarSuggestions={requestCalendarSuggestions ?? (async () => [])}
     />
@@ -114,22 +114,36 @@ describe("TimesScreen", () => {
     expect(addSpy).toHaveBeenCalledWith(free);
   });
 
-  test("Done is disabled with no slots", async () => {
-    const screen = await render(<Harness initial={[]} />);
-    await expect.element(screen.getByRole("button", { name: /Done/ })).toBeDisabled();
-  });
-
-  test("Done routes onward once there are slots", async () => {
-    const onDone = vi.fn();
+  test("a picked slot exposes a remove button (no check tick)", async () => {
     const slot: DraftSlot = {
       start: "2024-03-18T14:00:00.000Z",
       end: "2024-03-18T14:30:00.000Z",
     };
-    const screen = await render(<Harness onDone={onDone} initial={[slot]} />);
-    const done = screen.getByRole("button", { name: /Done/ });
-    await expect.element(done).toBeEnabled();
-    await done.click();
-    expect(onDone).toHaveBeenCalledOnce();
+    const screen = await render(<Harness initial={[slot]} />);
+    // 14:00Z on 2024-03-18 renders as 10:00 AM in America/New_York (EDT).
+    await expect
+      .element(screen.getByRole("button", { name: /Remove 10:00\s*–\s*10:30 AM/ }))
+      .toBeVisible();
+    // The list no longer uses the check-tick toggle for picked slots.
+    expect(document.querySelector(".slot .tick")).toBeNull();
+  });
+
+  test("Confirm is disabled with no slots", async () => {
+    const screen = await render(<Harness initial={[]} />);
+    await expect.element(screen.getByRole("button", { name: /Confirm/ })).toBeDisabled();
+  });
+
+  test("Confirm routes onward once there are slots", async () => {
+    const onConfirm = vi.fn();
+    const slot: DraftSlot = {
+      start: "2024-03-18T14:00:00.000Z",
+      end: "2024-03-18T14:30:00.000Z",
+    };
+    const screen = await render(<Harness onDone={onConfirm} initial={[slot]} />);
+    const confirm = screen.getByRole("button", { name: /Confirm/ });
+    await expect.element(confirm).toBeEnabled();
+    await confirm.click();
+    expect(onConfirm).toHaveBeenCalledOnce();
   });
 
   test("no AI surface beyond the disabled 'Soon' row", async () => {

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { VoteScreen, type ScanConfig, type VoteSlot } from "@/components/event/vote-screen";
 import { getIdentity, saveIdentity } from "@/lib/identity";
+import { getIsCreator } from "@/lib/creator";
 import { slotWithinConfig } from "@/lib/domain";
 
 export interface VoteConnectedProps {
@@ -55,7 +56,10 @@ export function VoteConnected({
     const init = new Set<string>(id?.selectedSlotIds ?? []);
     for (const i of autoTickedIds ?? []) init.add(i);
     setSelected(init);
+    // Prefer a stored identity; otherwise prefill the creator's own name so they
+    // don't have to retype it when filling out their availability.
     if (id?.name) setName(id.name);
+    else if (getIsCreator(eventId) && hostName) setName(hostName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 

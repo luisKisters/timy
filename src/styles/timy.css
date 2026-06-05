@@ -59,9 +59,11 @@
   flex-direction: column;
   height: 100dvh;
   max-height: 100dvh;
-  /* A centered, app-width column — never stretches across a wide desktop. */
+  /* A centered, app-width column — never stretches across a wide desktop.
+     ~30% wider than phone width so it reads as a real (bordered) desktop
+     surface rather than a cramped mobile strip. */
   width: 100%;
-  max-width: 480px;
+  max-width: 620px;
   margin-inline: auto;
   background: var(--bg);
   color: var(--fg);
@@ -70,8 +72,8 @@
   text-rendering: optimizeLegibility;
   overflow: hidden;
 }
-/* Delineate the column edges once there's room beside it. */
-@media (min-width: 520px) {
+/* Delineate the column edges once there's real room beside the wider column. */
+@media (min-width: 660px) {
   .timy-shell {
     border-inline: 1px solid var(--border);
   }
@@ -170,6 +172,17 @@
 /* Safety net: a secondary button always renders above the primary. */
 .dock-stack .btn-secondary {
   order: -1;
+}
+/* On desktop the column has room to lay dock actions out side-by-side:
+   secondary on the left (order: -1), primary on the right. */
+@media (min-width: 520px) {
+  .dock-stack {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .dock-stack > .btn {
+    flex: 1;
+  }
 }
 
 /* ---------- Typography helpers ---------- */
@@ -552,13 +565,19 @@
   color: var(--muted);
 }
 
-/* tiny calendar strip */
+/* tiny calendar strip — pinned to the top of the scroll area so a long slot
+   list scrolls *underneath* it and day-switching stays reachable. */
 .datestrip {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   gap: 7px;
   overflow-x: auto;
+  padding-top: 6px;
   padding-bottom: 6px;
   margin-bottom: 2px;
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 .datestrip::-webkit-scrollbar {
@@ -654,6 +673,27 @@
   padding: 14px;
 }
 
+/* grayed, dashed empty state — e.g. results "no favorite yet, invite more people" */
+.empty-hero {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--card-2);
+  padding: 22px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+.empty-hero b {
+  display: block;
+  font-size: 16px;
+  color: var(--fg-soft);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.empty-hero span {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .spread {
   display: flex;
   align-items: center;
@@ -729,7 +769,7 @@
   border-radius: 26px 26px 0 0;
   padding: 8px 16px calc(18px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -12px 44px rgba(0, 0, 0, 0.22);
-  max-width: 540px;
+  max-width: 620px;
   margin-inline: auto;
   max-height: 88dvh;
   overflow-y: auto;
@@ -799,6 +839,72 @@
 .sheet-opt.is-disabled {
   opacity: 0.55;
   pointer-events: none;
+}
+
+/* ---------- Profile avatar button + menu ---------- */
+.pfp {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  background: var(--brand);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: var(--shadow-sm);
+}
+.pfp:active {
+  transform: scale(0.96);
+}
+.pfp.pfp-lg {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 4px 8px 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.profile-head .txt b {
+  display: block;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.profile-head .txt span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.sheet-subhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.sheet-subhead .back {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  color: var(--fg-soft);
+  font-size: 16px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.sheet-subhead h4 {
+  margin: 0;
 }
 
 /* time-window pair of read-only fields */

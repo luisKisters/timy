@@ -25,7 +25,7 @@ export function SetupScreen({ value, onChange, onContinue, onBack }: SetupScreen
   return (
     <AppShell
       topbar={
-        <Topbar onBack={onBack} trailing={<Stepper total={3} current={1} label="1/3" />} />
+        <Topbar onBack={onBack} trailing={<Stepper total={2} current={1} label="1/2" />} />
       }
       dock={
         <Button
